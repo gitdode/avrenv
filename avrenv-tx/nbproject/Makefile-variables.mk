@@ -9,11 +9,11 @@ CND_DISTDIR=dist
 # Custom configuration
 CND_PLATFORM_Custom=AVR-Linux
 CND_ARTIFACT_DIR_Custom=dist/Custom/AVR-Linux
-CND_ARTIFACT_NAME_Custom=avrenv
-CND_ARTIFACT_PATH_Custom=dist/Custom/AVR-Linux/avrenv
+CND_ARTIFACT_NAME_Custom=tx
+CND_ARTIFACT_PATH_Custom=dist/Custom/AVR-Linux/tx
 CND_PACKAGE_DIR_Custom=dist/Custom/AVR-Linux/package
-CND_PACKAGE_NAME_Custom=avrenv.tar
-CND_PACKAGE_PATH_Custom=dist/Custom/AVR-Linux/package/avrenv.tar
+CND_PACKAGE_NAME_Custom=tx.tar
+CND_PACKAGE_PATH_Custom=dist/Custom/AVR-Linux/package/tx.tar
 #
 # include compiler specific variables
 #

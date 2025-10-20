@@ -3,14 +3,14 @@
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>avrenv</name>
+            <name>avrenv-tx</name>
             <c-extensions>c</c-extensions>
             <cpp-extensions/>
             <header-extensions>h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
-                <sourceRootElem>/home/dode/dev/avrenv</sourceRootElem>
+                <sourceRootElem>/home/dode/dev/avrenv/avrenv-tx</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

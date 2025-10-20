@@ -1,13 +1,13 @@
 /*
- * avr64ea.c
+ * avrenv.c
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 2.
  *
- * Playground to get into the newer AVRs.
+ * Transmitter part of the avrenv project.
  *
- * Created on: 16.05.2025
+ * Created on: 20.10.2025
  *     Author: torsten.roemer@luniks.net
  *
  */
@@ -34,33 +34,14 @@
 /* Timebase used for timing internal delays */
 #define TIMEBASE_VALUE ((uint8_t) ceil(F_CPU * 0.000001))
 
-/* 0°C in Kelvin */
-#define TMP_0C      273.15
-
-/* Specifications of the NTC Thermistor 0.1°C */
-#define TH_RESI     100000
-#define TH_TEMP     298.15
-#define TH_BETA     3892
-/* Serial resistance */
-#define TH_SERI     100000
-
 #ifndef LORA
     #define LORA    0
 #endif
 
 #define USART       1
 
-/* Generates a software event on the given channel */
-#define generate_event(channel) EVSYS_SWEVENTA |= (1 << channel)
-
 /* Periodic interrupt timer interrupt count */
 static volatile uint32_t pitints = 0;
-
-/* Timer/Counter Type A 0 interrupt count */
-static volatile uint32_t tca0ints = 0;
-
-/* Read only data in program memory visible in RAM address space */
-const char rostr[] = "This is a string in .rodata in program memory\r\n";
 
 /** Averaged battery voltage in millivolts */
 static uint16_t bavg;
@@ -72,23 +53,7 @@ ISR(RTC_PIT_vect) {
     pitints++;
 }
 
-/* Timer/Counter Type A 0 overflow/underflow interrupt */
-ISR(TCA0_OVF_vect) {
-    // clear flag or interrupt remains active
-    TCA0_SINGLE_INTFLAGS |= TCA_SINGLE_OVF_bm;
-    tca0ints++;
-}
-
-/* ADC0 result ready interrupt... */
-/*
-ISR(ADC0_RESRDY_vect) {
-    // can use ISR or just check flags
-    // flag also cleared when reading result
-    ADC0_INTFLAGS |= ADC_RESRDY_bm;
-}
- */
-
-/* ...or just empty */
+/* ADC empty interrupt */
 EMPTY_INTERRUPT(ADC0_RESRDY_vect);
 
 /**
@@ -126,9 +91,6 @@ static void initPins(void) {
     // disabling digital input buffer before going to sleep has the same effect
     PORTA_PIN5CTRL |= PORT_PULLUPEN_bm;
 
-    // PC2 powers the thermistor (output pin)
-    PORTC_DIRSET = (1 << TH_PWR_PC2);
-
     // PD0 is radio module reset pin (output pin)
     PORTD_DIRSET = (1 << RFM_RST_PD0);
 
@@ -163,24 +125,6 @@ static void initRTC(void) {
     RTC_PITCTRLA |= RTC_PERIOD_CYC32768_gc | RTC_PITEN_bm;
 }
 
-/* Initializes Timer/Counter Type A 0 */
-static void initTimerA(void) {
-    // set timer period/TOP value
-    TCA0_SINGLE_PER = F_CPU / 1024;
-    // timer clock select, enable timer
-    TCA0_SINGLE_CTRLA |= TCA_SINGLE_CLKSEL_DIV1024_gc | TCA_SINGLE_ENABLE_bm;
-    // enable overflow/underflow interrupt
-    TCA0_SINGLE_INTCTRL |= (1 << TCA_SINGLE_OVF_bp);
-    // keep on running in standby sleep mode
-    TCA0_SINGLE_CTRLA |= TCA_SINGLE_RUNSTDBY_bm;
-}
-
-/* Initializes Timer/Counter Type B 0 */
-static void initTimerB(void) {
-    // positive edge on event input, enable timer
-    TCB0_CTRLA |= TCB_CLKSEL_EVENT_gc | TCB_ENABLE_bm;
-}
-
 /* Initializes the ADC */
 static void initADC(void) {
     // enable ADC0
@@ -205,12 +149,6 @@ static void initSPI(void) {
     SPI0_CTRLB |= SPI_SSD_bm;
     // SPI master mode, SPI enable
     SPI0_CTRLA |= SPI_MASTER_bm | SPI_ENABLE_bm;
-}
-
-/* Initializes the Event System */
-static void initEVSYS(void) {
-    // connect Timer/Counter Type B 0 as event user to CHANNEL0
-    EVSYS_USERTCB0COUNT |= EVSYS_CHANNEL_0_bm;
 }
 
 /* Initializes pin interrupts */
@@ -248,25 +186,6 @@ static uint16_t convert(ADC_REFSEL_t ref, ADC_MUXPOS_t pin, uint8_t dur) {
 }
 
 /**
- * Measures the temperature and returns it in °C * 10. Powers on the thermistor
- * before AD conversion and again off after, saving about 22µA during sleep mode.
- *
- * @return temperature in °C * 10
- */
-static int16_t measureTemp(void) {
-    PORTC_OUTSET = (1 << TH_PWR_PC2);
-    uint32_t adc = convert(ADC_REFSEL_VDD_gc, ADC_MUXPOS_AIN23_gc, 16);
-    PORTC_OUTCLR = (1 << TH_PWR_PC2);
-
-    // resistance of the thermistor
-    float resTh = (4096.0 / fmax(1, adc) - 1) * TH_SERI;
-    // temperature in °C * 10
-    float temp = 10.0 / (1.0 / TH_BETA * log(resTh / TH_RESI) + 1.0 / TH_TEMP) - TMP_0C * 10;
-
-    return temp;
-}
-
-/**
  * Measures the battery voltage divided by two with 2.048V reference voltage
  * and returns it in millivolt.
  *
@@ -284,16 +203,13 @@ int main(void) {
     initPins();
     initClock();
     initRTC();
-    // initTimerA();
-    initTimerB();
     initADC();
     initUSART();
     initSPI();
-    initEVSYS();
     initInts();
 
     if (USART) {
-        printString("Hello AVR64EA!\r\n");
+        printString("Hello avrenv transmitter!\r\n");
         char rev[16];
         snprintf(rev, sizeof (rev), "Rev. %c%d\r\n",
                 (SYSCFG_REVID >> 4) - 1 + 'A',
@@ -331,8 +247,6 @@ int main(void) {
 
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
-    if (USART) printString(rostr);
-
     while (true) {
         if (pitints % 8 == 0) {
             uint16_t bat = measureBat();
@@ -342,15 +256,10 @@ int main(void) {
             if (bavg < 2100) {
                 if (USART) printString("Battery low\r\n");
             } else {
-                uint16_t temp = measureTemp();
                 uint8_t power = rfmGetOutputPower();
 
                 if (USART) {
-                    // print temperature measured with thermistor for reference
-                    div_t tmp = div(temp, 10);
-                    char buf[18];
-                    snprintf(buf, sizeof (buf), "%4d.%d°C\r\n", tmp.quot, abs(tmp.rem));
-                    printString(buf);
+                    char buf[12];
                     // print battery voltage
                     snprintf(buf, sizeof (buf), "%d mV\r\n", bavg);
                     printString(buf);
@@ -409,10 +318,6 @@ int main(void) {
                     }
                 }
             }
-
-            // generate an event on channel 0 incrementing timer B0 count
-            generate_event(0);
-            if (USART) printInt(TCB0_CNT); // 16-Bit
 
             // wait for USART tx to be done (before going to sleep)
             wait_usart_tx_done();

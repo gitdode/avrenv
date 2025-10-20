@@ -16,7 +16,6 @@
 #define SS_PA7          PIN7
 #define USART_TX_PC0    PIN0
 #define USART_RX_PC1    PIN1
-#define TH_PWR_PC2      PIN2
 #define TH_ADC_PA3      PIN3 // AIN23
 #define RFM_RST_PD0     PIN0
 #define RFM_CS_PD1      PIN1

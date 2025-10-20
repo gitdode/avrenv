@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
-    <df root="/home/dode/dev/avrenv" name="0">
+    <df root="/home/dode/dev/avrenv/avrenv-tx" name="0">
       <df name="bme68x">
         <in>bme68x.c</in>
         <in>bme68x.h</in>
@@ -20,15 +20,15 @@
                    displayName="Important Files"
                    projectFiles="false"
                    kind="IMPORTANT_FILES_FOLDER">
-      <itemPath>/home/dode/dev/avrenv/Makefile</itemPath>
-      <itemPath>/home/dode/dev/avrenv/nbproject/private/launcher.properties</itemPath>
+      <itemPath>/home/dode/dev/avrenv/avrenv-tx/Makefile</itemPath>
+      <itemPath>/home/dode/dev/avrenv/avrenv-tx/nbproject/private/launcher.properties</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
-    <Elem>/home/dode/dev/avrenv</Elem>
+    <Elem>/home/dode/dev/avrenv/avrenv-tx</Elem>
   </sourceRootList>
-  <projectmakefile>/home/dode/dev/avrenv/Makefile</projectmakefile>
+  <projectmakefile>/home/dode/dev/avrenv/avrenv-tx/Makefile</projectmakefile>
   <confs>
     <conf name="Custom" type="1">
       <toolsSet>
@@ -52,36 +52,36 @@
           </preprocessorList>
         </cTool>
       </compileType>
-      <item path="/home/dode/dev/avrenv/avrenv.c" ex="false" tool="0" flavor2="3">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/avrenv.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="/home/dode/dev/avrenv/bme688.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/bme688.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/bme688.h" ex="false" tool="3" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/bme688.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/bme68x/bme68x.c"
+      <item path="/home/dode/dev/avrenv/avrenv-tx/bme68x/bme68x.c"
             ex="false"
             tool="0"
             flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/bme68x/bme68x.h"
+      <item path="/home/dode/dev/avrenv/avrenv-tx/bme68x/bme68x.h"
             ex="false"
             tool="3"
             flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/bme68x/bme68x_defs.h"
+      <item path="/home/dode/dev/avrenv/avrenv-tx/bme68x/bme68x_defs.h"
             ex="false"
             tool="3"
             flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/pins.h" ex="false" tool="3" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/pins.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/rfm.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/rfm.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/spi.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/spi.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/spi.h" ex="false" tool="3" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/spi.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/usart.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/usart.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
   </confs>

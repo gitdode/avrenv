@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
-    <df root="/home/dode/dev/avrenv" name="0">
-      <df name=".kdev4">
-      </df>
+    <df root="/home/dode/dev/avrenv/avrenv-tx" name="0">
       <df name="bme68x">
         <in>bme68x.c</in>
         <in>bme68x.h</in>
         <in>bme68x_defs.h</in>
+      </df>
+      <df name="rx">
+      </df>
+      <df name="tx">
+        <df name="bme68x">
+          <in>bme68x.c</in>
+          <in>bme68x.h</in>
+          <in>bme68x_defs.h</in>
+        </df>
+        <in>avrenv.c</in>
+        <in>bme688.c</in>
+        <in>bme688.h</in>
+        <in>pins.h</in>
+        <in>rfm.c</in>
+        <in>spi.c</in>
+        <in>spi.h</in>
+        <in>usart.c</in>
+        <in>usart.h</in>
+        <in>utils.h</in>
       </df>
       <in>avrenv.c</in>
       <in>bme688.c</in>
@@ -17,11 +34,9 @@
       <in>spi.c</in>
       <in>spi.h</in>
       <in>usart.c</in>
-      <in>usart.h</in>
-      <in>utils.h</in>
     </df>
   </logicalFolder>
-  <projectmakefile>/home/dode/dev/avrenv/Makefile</projectmakefile>
+  <projectmakefile>/home/dode/dev/avrenv/avrenv-tx/Makefile</projectmakefile>
   <confs>
     <conf name="Custom" type="1">
       <toolsSet>
