@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="/home/dode/dev/avrenv" name="0">
+      <df name="bme68x">
+        <in>bme68x.c</in>
+        <in>bme68x.h</in>
+        <in>bme68x_defs.h</in>
+      </df>
+      <in>avrenv.c</in>
+      <in>bme688.c</in>
+      <in>bme688.h</in>
+      <in>pins.h</in>
+      <in>rfm.c</in>
+      <in>spi.c</in>
+      <in>spi.h</in>
+      <in>usart.c</in>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>/home/dode/dev/avrenv/Makefile</itemPath>
+      <itemPath>/home/dode/dev/avrenv/nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>/home/dode/dev/avrenv</Elem>
+  </sourceRootList>
+  <projectmakefile>/home/dode/dev/avrenv/Makefile</projectmakefile>
+  <confs>
+    <conf name="Custom" type="1">
+      <toolsSet>
+        <compilerSet>AVR|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>/home/dode/dev</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BAUD=9600</Elem>
+            <Elem>BAUDRATE=9600</Elem>
+            <Elem>F_CPU=10000000UL</Elem>
+            <Elem>RFM=69</Elem>
+            <Elem>__AVR_AVR64EA28__</Elem>
+            <Elem>__flash=volatile</Elem>
+          </preprocessorList>
+        </cTool>
+      </compileType>
+      <item path="/home/dode/dev/avrenv/avrenv.c" ex="false" tool="0" flavor2="3">
+      </item>
+      <item path="/home/dode/dev/avrenv/bme688.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/bme688.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/bme68x/bme68x.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/bme68x/bme68x.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/bme68x/bme68x_defs.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/pins.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/rfm.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/spi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/spi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/usart.c" ex="false" tool="0" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
