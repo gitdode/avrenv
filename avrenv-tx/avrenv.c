@@ -259,9 +259,9 @@ int main(void) {
                 uint8_t power = rfmGetOutputPower();
 
                 if (USART) {
-                    char buf[12];
-                    // print battery voltage
-                    snprintf(buf, sizeof (buf), "%d mV\r\n", bavg);
+                    char buf[21];
+                    // print output power and battery voltage
+                    snprintf(buf, sizeof (buf), "%d dBm, %d mV\r\n", power, bavg);
                     printString(buf);
                 }
 
