@@ -52,11 +52,20 @@
           </preprocessorList>
         </cTool>
       </compileType>
-      <item path="/home/dode/dev/avrenv/avrenv-tx/avrenv.c" ex="false" tool="0" flavor2="3">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/avrenv.c"
+            ex="false"
+            tool="0"
+            flavor2="3">
       </item>
-      <item path="/home/dode/dev/avrenv/avrenv-tx/bme688.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/bme688.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/avrenv-tx/bme688.h" ex="false" tool="3" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/bme688.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="/home/dode/dev/avrenv/avrenv-tx/bme68x/bme68x.c"
             ex="false"
@@ -73,15 +82,30 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/avrenv-tx/pins.h" ex="false" tool="3" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/pins.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/avrenv-tx/rfm.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/rfm.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/avrenv-tx/spi.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/spi.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/avrenv-tx/spi.h" ex="false" tool="3" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/spi.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
-      <item path="/home/dode/dev/avrenv/avrenv-tx/usart.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-tx/usart.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
       </item>
     </conf>
   </confs>

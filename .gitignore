@@ -1,0 +1,9 @@
+*.elf
+*.hex
+*.lst
+# *.a
+*.d
+*.o
+*.map
+/avrenv-tx/nbproject/private/
+/avrenv-rx/nbproject/private/

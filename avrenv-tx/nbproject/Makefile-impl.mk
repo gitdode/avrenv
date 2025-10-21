@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=tx
+PROJECTNAME=avrenv-tx
 
 # Active Configuration
 DEFAULTCONF=Custom
