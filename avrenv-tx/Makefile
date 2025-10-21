@@ -38,7 +38,6 @@ CFLAGS += -std=gnu99
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c
 SRC += ../../librfm$(RFM)/librfm$(RFM).a
-SRC += ../../bsec/avr/AVR8_XMEGA/libalgobsec.a
 
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)

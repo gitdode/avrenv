@@ -40,7 +40,10 @@
 
 #define USART       1
 
-/* Periodic interrupt timer interrupt count */
+/* Awake/busy interval in seconds */
+#define INTERVAL    8
+
+/* Periodic interrupt timer interrupt count (seconds) */
 static volatile uint32_t pitints = 0;
 
 /** Averaged battery voltage in millivolts */
@@ -233,10 +236,8 @@ int main(void) {
         printString("Radio init failed!\r\n");
     }
 
-    struct bme68x_dev dev;
-    struct bme68x_conf conf;
-    struct bme68x_heatr_conf heater_conf;
-    int8_t bme688 = initBME68x(&dev, &conf, &heater_conf);
+    static Intf intf = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
+    int8_t bme688 = initBME68x(300, 200, 20, &intf);
     if (bme688 != 0 && USART) {
         printString("BME688 init failed!\r\n");
         printInt(bme688);
@@ -248,7 +249,7 @@ int main(void) {
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
     while (true) {
-        if (pitints % 8 == 0) {
+        if (pitints % INTERVAL == 0) {
             uint16_t bat = measureBat();
             if (bavg == 0) bavg = bat;
             bavg = (bavg + bat) >> 1;
@@ -260,14 +261,21 @@ int main(void) {
 
                 if (USART) {
                     char buf[35];
-                    // print output power and battery voltage
-                    snprintf(buf, sizeof (buf), "%d dBm, %d mV, %lds\r\n", power, bavg, pitints);
+                    // print uptime seconds, battery voltage and output power
+                    snprintf(buf, sizeof (buf), "%lds, %d mV, %d dBm\r\n",
+                            pitints, bavg, power);
                     printString(buf);
                 }
 
                 if (bme688 == 0) {
+                    // reduce heater duration after warm-up period
+                    if (pitints == INTERVAL * 37) {
+                        bme68xSetHeaterConf(300, 150);
+                        printString("Set final heater conf\r\n");
+                    }
+
                     struct bme68x_data data;
-                    bme68xMeasure(&dev, &conf, &heater_conf, &data);
+                    bme68xMeasure(&data);
 
                     div_t tdiv = div(data.temperature, 100);
                     uint8_t humidity = divRoundNearest(data.humidity, 1000);

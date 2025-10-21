@@ -28,28 +28,34 @@ typedef struct {
 /**
  * Initializes the BME68x sensor.
  * 
- * @param dev device
- * @param conf sensor config
- * @param heater_conf heater config
+ * @param temp heater temperature
+ * @param dur heater duration in milliseconds
+ * @param amb ambient temperature
+ * @param intf port and pin for SPI chip select
  * @return error code
  */
-int8_t initBME68x(struct bme68x_dev *dev,
-                  struct bme68x_conf *conf,
-                  struct bme68x_heatr_conf *heater_conf);
+int8_t initBME68x(uint16_t temp,
+                  uint16_t dur,
+                  uint8_t amb,
+                  Intf *intf);
+
+/**
+ * Sets heater temperature and duration in milliseconds.
+ * 
+ * @param temp heater temperature
+ * @param dur duration in milliseconds
+ * @return error code
+ */
+int8_t bme68xSetHeaterConf(uint16_t temp, 
+                           uint16_t dur);
 
 /**
  * Performs a measurement.
  * 
- * @param dev device
- * @param conf sensor config
- * @param heater_conf heater config
  * @param data measurement data read from sensor
  * @return error code
  */
-int8_t bme68xMeasure(struct bme68x_dev *dev,
-                     struct bme68x_conf *conf,
-                     struct bme68x_heatr_conf *heater_conf,
-                     struct bme68x_data *data);
+int8_t bme68xMeasure(struct bme68x_data *data);
 
 #undef __DELAY_BACKWARD_COMPATIBLE__
 
