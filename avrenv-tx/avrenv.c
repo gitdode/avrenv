@@ -201,6 +201,41 @@ static int16_t measureBat(void) {
     return mv;
 }
 
+/**
+ * Prints given measurements.
+ *
+ * @param power radio power in dBm
+ * @param humidity relative humidity in %
+ * @param pressure barometric pressure in hPa
+ * @param data data from BME688
+ */
+static void printMeas(uint8_t power,
+                      uint8_t humidity,
+                      uint16_t pressure,
+                      struct bme68x_data *data) {
+    div_t tdiv = div(data->temperature, 100);
+
+    // highly sophisticated IAQ algorithm
+    char *aqi = "excellent";
+    if (data->gas_resistance < 45000L) aqi = "good";
+    if (data->gas_resistance < 35000L) aqi = "moderate";
+    if (data->gas_resistance < 25000L) aqi = "poor";
+    if (data->gas_resistance < 15000L) aqi = "unhealthy";
+
+    char buf[128];
+    snprintf(buf, sizeof (buf), "%5lds, %d mV, %d dBm, %c%d.%d°C, %d%%, %d hPa, %ld Ohm (%s), 0x%02x\r\n",
+            pitints,
+            bavg,
+            power,
+            data->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
+            humidity,
+            pressure,
+            data->gas_resistance,
+            aqi,
+            data->status);
+    printString(buf);
+}
+
 int main(void) {
 
     initPins();
@@ -214,7 +249,7 @@ int main(void) {
     if (USART) {
         printString("Hello avrenv transmitter!\r\n");
         char rev[16];
-        snprintf(rev, sizeof (rev), "Rev. %c%d\r\n",
+        snprintf(rev, sizeof (rev), "MCU rev. %c%d\r\n",
                 (SYSCFG_REVID >> 4) - 1 + 'A',
                 SYSCFG_REVID & SYSCFG_MINOR_gm);
         printString(rev);
@@ -250,80 +285,52 @@ int main(void) {
 
     while (true) {
         if (pitints % INTERVAL == 0) {
+
             uint16_t bat = measureBat();
             if (bavg == 0) bavg = bat;
             bavg = (bavg + bat) >> 1;
 
             if (bavg < 2100) {
                 if (USART) printString("Battery low\r\n");
-            } else {
+            } else if (radio && bme688 == 0) {
                 uint8_t power = rfmGetOutputPower();
 
-                if (USART) {
-                    char buf[35];
-                    // print uptime seconds, battery voltage and output power
-                    snprintf(buf, sizeof (buf), "%lds, %d mV, %d dBm\r\n",
-                            pitints, bavg, power);
-                    printString(buf);
+                // reduce heater duration after warm-up period
+                if (pitints == INTERVAL * 37) {
+                    bme68xSetHeaterConf(300, 150);
+                    if (USART) printString("Set final heater conf\r\n");
                 }
 
-                if (bme688 == 0) {
-                    // reduce heater duration after warm-up period
-                    if (pitints == INTERVAL * 37) {
-                        bme68xSetHeaterConf(300, 150);
-                        printString("Set final heater conf\r\n");
-                    }
+                struct bme68x_data data;
+                bme68xMeasure(&data);
 
-                    struct bme68x_data data;
-                    bme68xMeasure(&data);
+                uint8_t humidity = divRoundNearest(data.humidity, 1000);
+                uint16_t pressure = divRoundNearest(data.pressure, 100);
+                uint32_t gas_res = data.gas_resistance / 100; // hOhm
 
-                    div_t tdiv = div(data.temperature, 100);
-                    uint8_t humidity = divRoundNearest(data.humidity, 1000);
-                    uint16_t pressure = divRoundNearest(data.pressure, 100);
-                    uint32_t gas_res = data.gas_resistance / 100; // hOhm
+                uint8_t payload[] = {
+                    data.temperature >> 8,
+                    data.temperature,
+                    humidity,
+                    pressure >> 8,
+                    pressure,
+                    // 18 bit are probably more than sufficient plus
+                    // a simple "DC free" mechanism avoiding some
+                    // consecutive 0's
+                    // data.gas_resistance >> 24,
+                    (gas_res >> 16) | 0xa8,
+                    gas_res >> 8,
+                    gas_res,
+                    power,
+                    bavg >> 8,
+                    bavg
+                };
+                rfmWake();
+                rfmTransmitPayload(payload, sizeof (payload), 0x24);
+                rfmSleep();
 
-                    if (radio) {
-                        uint8_t payload[] = {
-                            data.temperature >> 8,
-                            data.temperature,
-                            humidity,
-                            pressure >> 8,
-                            pressure,
-                            // 18 bit are probably more than sufficient plus
-                            // a simple "DC free" mechanism avoiding some
-                            // consecutive 0's
-                            // data.gas_resistance >> 24,
-                            (gas_res >> 16) | 0xa8,
-                            gas_res >> 8,
-                            gas_res,
-                            power,
-                            bavg >> 8,
-                            bavg
-                        };
-                        rfmWake();
-                        rfmTransmitPayload(payload, sizeof (payload), 0x24);
-                        rfmSleep();
-                    }
-
-                    if (USART) {
-                        // highly sophisticated IAQ algorithm
-                        char *aqi = "excellent";
-                        if (data.gas_resistance < 45000L) aqi = "good";
-                        if (data.gas_resistance < 35000L) aqi = "moderate";
-                        if (data.gas_resistance < 25000L) aqi = "poor";
-                        if (data.gas_resistance < 15000L) aqi = "unhealthy";
-
-                        // print measurements of the BME688
-                        char buf[80];
-                        snprintf(buf, sizeof (buf), "%c%d.%d°C, %d%%, %d hPa, %ld Ohm (%s), 0x%02x\r\n",
-                                data.temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
-                                humidity,
-                                pressure,
-                                data.gas_resistance,
-                                aqi,
-                                data.status);
-                        printString(buf);
-                    }
+                if (USART) {
+                    printMeas(power, humidity, pressure, &data);
                 }
             }
 
