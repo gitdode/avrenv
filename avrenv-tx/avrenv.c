@@ -207,7 +207,7 @@ static int16_t measureBat(void) {
  * @param power radio power in dBm
  * @param humidity relative humidity in %
  * @param pressure barometric pressure in hPa
- * @param data data from BME688
+ * @param data measurements from BME688
  */
 static void printMeas(uint8_t power,
                       uint8_t humidity,
@@ -272,7 +272,7 @@ int main(void) {
     }
 
     static Intf intf = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
-    int8_t bme688 = initBME68x(300, 200, 20, &intf);
+    int8_t bme688 = initBME68x(300, 150, 20, &intf);
     if (bme688 != 0 && USART) {
         printString("BME688 init failed!\r\n");
         printInt(bme688);
@@ -294,12 +294,6 @@ int main(void) {
                 if (USART) printString("Battery low\r\n");
             } else if (radio && bme688 == 0) {
                 uint8_t power = rfmGetOutputPower();
-
-                // reduce heater duration after warm-up period
-                if (pitints == INTERVAL * 37) {
-                    bme68xSetHeaterConf(300, 150);
-                    if (USART) printString("Set final heater conf\r\n");
-                }
 
                 struct bme68x_data data;
                 bme68xMeasure(&data);
