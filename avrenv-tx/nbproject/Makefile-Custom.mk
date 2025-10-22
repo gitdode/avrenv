@@ -40,7 +40,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/3d12a1ed/bme68x.o \
 	${OBJECTDIR}/_ext/7eff1f7e/rfm.o \
 	${OBJECTDIR}/_ext/7eff1f7e/spi.o \
-	${OBJECTDIR}/_ext/7eff1f7e/usart.o
+	${OBJECTDIR}/_ext/7eff1f7e/usart.o \
+	${OBJECTDIR}/ens160.o
 
 
 # C Compiler Flags
@@ -90,6 +91,10 @@ ${OBJECTDIR}/_ext/7eff1f7e/spi.o: /home/dode/dev/avrenv/avrenv-tx/spi.c
 ${OBJECTDIR}/_ext/7eff1f7e/usart.o: /home/dode/dev/avrenv/avrenv-tx/usart.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
 	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/_ext/7eff1f7e/usart.o /home/dode/dev/avrenv/avrenv-tx/usart.c
+
+${OBJECTDIR}/ens160.o: ens160.c
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/ens160.o ens160.c
 
 # Subprojects
 .build-subprojects:

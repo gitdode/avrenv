@@ -30,6 +30,7 @@
     #include "librfm95/librfm95.h"
 #endif
 #include "bme688.h"
+#include "ens160.h"
 
 /* Timebase used for timing internal delays */
 #define TIMEBASE_VALUE ((uint8_t) ceil(F_CPU * 0.000001))
@@ -271,11 +272,18 @@ int main(void) {
         printString("Radio init failed!\r\n");
     }
 
-    static Intf intf = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
-    int8_t bme688 = initBME68x(300, 150, 20, &intf);
-    if (bme688 != 0 && USART) {
+    static SpiCs bmeSpiCs = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
+    int8_t bme = bmeInit(300, 150, 20, &bmeSpiCs);
+    if (bme != 0 && USART) {
         printString("BME688 init failed!\r\n");
-        printInt(bme688);
+        printInt(bme);
+    }
+
+    static SpiCs ensSpiCs = {.port = &PORTD_OUT, .pin = ENS_CS_PD5};
+    bool ens = ensInit(&ensSpiCs);
+    if (!ens && USART) {
+        printString("ENS160 init failed!\r\n");
+        printInt(ens);
     }
 
     // enable global interrupts
@@ -292,11 +300,11 @@ int main(void) {
 
             if (bavg < 2100) {
                 if (USART) printString("Battery low\r\n");
-            } else if (radio && bme688 == 0) {
+            } else if (radio && bme == 0) {
                 uint8_t power = rfmGetOutputPower();
 
                 struct bme68x_data data;
-                bme68xMeasure(&data);
+                bmeMeasure(&data);
 
                 uint8_t humidity = divRoundNearest(data.humidity, 1000);
                 uint16_t pressure = divRoundNearest(data.pressure, 100);

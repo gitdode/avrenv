@@ -10,6 +10,12 @@
 
 #include <avr/io.h>
 
+/* Port and pin for SPI chip select */
+typedef struct {
+    volatile uint8_t *port;
+    uint8_t pin;
+} SpiCs;
+
 /**
  * Sets slow SPI speed.
  */

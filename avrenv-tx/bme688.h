@@ -16,14 +16,7 @@
 
 #include "pins.h"
 #include "spi.h"
-#include "usart.h"
 #include "bme68x/bme68x.h"
-
-/* Port and pin for SPI chip select */
-typedef struct {
-    volatile uint8_t *port;
-    uint8_t pin;
-} Intf;
 
 /**
  * Initializes the BME68x sensor.
@@ -34,10 +27,10 @@ typedef struct {
  * @param intf port and pin for SPI chip select
  * @return error code
  */
-int8_t initBME68x(uint16_t temp,
-                  uint16_t dur,
-                  uint8_t amb,
-                  Intf *intf);
+int8_t bmeInit(uint16_t temp,
+               uint16_t dur,
+               uint8_t amb,
+               SpiCs *intf);
 
 /**
  * Sets heater temperature and duration in milliseconds.
@@ -46,8 +39,8 @@ int8_t initBME68x(uint16_t temp,
  * @param dur duration in milliseconds
  * @return error code
  */
-int8_t bme68xSetHeaterConf(uint16_t temp, 
-                           uint16_t dur);
+int8_t bmeSetHeaterConf(uint16_t temp, 
+                        uint16_t dur);
 
 /**
  * Performs a measurement.
@@ -55,7 +48,7 @@ int8_t bme68xSetHeaterConf(uint16_t temp,
  * @param data measurement data read from sensor
  * @return error code
  */
-int8_t bme68xMeasure(struct bme68x_data *data);
+int8_t bmeMeasure(struct bme68x_data *data);
 
 #undef __DELAY_BACKWARD_COMPATIBLE__
 
