@@ -142,7 +142,7 @@ int8_t bmeMeasure(struct bme68x_data *data) {
         }
 
         uint32_t meas_dur = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, &dev) +
-                heater_conf.heatr_dur * 1000L;
+                heater_conf.heatr_dur * 1000UL;
         dev.delay_us(meas_dur, dev.intf_ptr);
 
         result = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, &dev);

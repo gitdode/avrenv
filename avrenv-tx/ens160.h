@@ -56,12 +56,25 @@
 #define ENS_COMMAND_GET_APPVER  0x0e // Get FW Version
 #define ENS_COMMAND_CLRGPR      0xcc // Clears GPR Read Registers
 
+/* Status masks */
+#define ENS_STATUS_STATAS_bm    0x80
+#define ENS_STATUS_STATER_bm    0x40
+#define ENS_STATUS_VALIDITY_gm  0x0c
+#define ENS_STATUS_NEWDAT_bm    0x02
+#define ENS_STATUS_NEWGPR_bm    0x01
+
 /* Data read from sensor */
 typedef struct {
     uint8_t aqi;
     uint16_t tvoc;
     uint16_t eco2;
+    uint8_t status;
 } EnsData;
+
+/**
+ * Notified when new output data is available.
+ */
+void ensIrq(void);
 
 /**
  * Initializes the ENS160 sensor.

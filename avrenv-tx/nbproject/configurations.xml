@@ -84,6 +84,16 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="/home/dode/dev/avrenv/avrenv-tx/ens160.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/avrenv-tx/ens160.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="/home/dode/dev/avrenv/avrenv-tx/pins.h"
             ex="false"
             tool="3"
@@ -108,10 +118,6 @@
             ex="false"
             tool="0"
             flavor2="0">
-      </item>
-      <item path="ens160.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="ens160.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

@@ -23,6 +23,7 @@
 #define RFM_INT1_PD3    PIN3
 #define BME_CS_PD4      PIN4
 #define ENS_CS_PD5      PIN5
+#define ENS_INT_PD6     PIN6
 
 #endif /* PINS_H */
 
