@@ -64,7 +64,7 @@ ISR(RTC_PIT_vect) {
 EMPTY_INTERRUPT(ADC0_RESRDY_vect);
 
 /**
- * Radio module DIO0 and DIO4 (FSK)/DIO1 (LoRa) interrupt.
+ * PORTD pin interrupt handlers.
  */
 ISR(PORTD_PORT_vect) {
     if (PORTD_INTFLAGS & PORT_INT_2_bm) {
@@ -115,10 +115,9 @@ static void initPins(void) {
     PORTD_PIN4CTRL |= PORT_PULLUPEN_bm;
 
     if (ENS160) {
-        // PD5 is ENS120 CS pin (output pin + pullup)
+        // PD5 is ENS120 CS pin (output pin + drive high)
         PORTD_DIRSET = (1 << ENS_CS_PD5);
         PORTD_OUTSET = (1 << ENS_CS_PD5);
-        // PORTD_PIN5CTRL |= PORT_PULLUPEN_bm;
     }
 }
 
@@ -286,7 +285,7 @@ int main(void) {
 
     static SpiCs bmeSpiCs = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
     int8_t bme = bmeInit(300, 100, 20, &bmeSpiCs);
-    if (bme != 0 && USART) {
+    if (USART && bme != 0) {
         printString("BME688 init failed!\r\n");
         printInt(bme);
     }
@@ -295,7 +294,7 @@ int main(void) {
     if (ENS160) {
         static SpiCs ensSpiCs = {.port = &PORTD_OUT, .pin = ENS_CS_PD5};
         ens = ensInit(&ensSpiCs);
-        if (!ens && USART) {
+        if (USART && !ens) {
             printString("ENS160 init failed!\r\n");
         }
     }
@@ -318,7 +317,7 @@ int main(void) {
                 if (ens) {
                     static EnsData ensdata = {0};
                     bool ensmeas = ensMeasure(&ensdata);
-                    if (ensmeas && USART) {
+                    if (USART && ensmeas) {
                         char buf[48];
                         snprintf(buf, sizeof (buf), "AQI: %u, TVOC: %5u ppb, eCO2: %5u ppm\r\n",
                                 ensdata.aqi, ensdata.tvoc, ensdata.eco2);
