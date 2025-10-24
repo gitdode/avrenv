@@ -14,6 +14,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <math.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -30,6 +31,7 @@
     #include "librfm95/librfm95.h"
 #endif
 #include "bme688.h"
+#include "ens160.h"
 
 /* Timebase used for timing internal delays */
 #define TIMEBASE_VALUE ((uint8_t) ceil(F_CPU * 0.000001))
@@ -37,6 +39,8 @@
 #ifndef LORA
     #define LORA    0
 #endif
+
+#define ENS160      1
 
 #define USART       1
 
@@ -65,13 +69,18 @@ EMPTY_INTERRUPT(ADC0_RESRDY_vect);
 ISR(PORTD_PORT_vect) {
     if (PORTD_INTFLAGS & PORT_INT_2_bm) {
         PORTD_INTFLAGS |= PORT_INT_2_bm;
-        // DIO0
+        // RFM DIO0
         rfmIrq();
     }
     if (PORTD_INTFLAGS & PORT_INT_3_bm) {
         PORTD_INTFLAGS |= PORT_INT_3_bm;
-        // DIO4 (FSK)/DIO1 (LoRa)
+        // RFM DIO4 (FSK)/DIO1 (LoRa)
         rfmIrq();
+    }
+    if (PORTD_INTFLAGS & PORT_INT_6_bm) {
+        PORTD_INTFLAGS |= PORT_INT_6_bm;
+        // ENS new output data available
+        ensIrq();
     }
 }
 
@@ -103,7 +112,14 @@ static void initPins(void) {
 
     // PD4 is BME68x CS pin (output pin + pullup)
     PORTD_DIRSET = (1 << BME_CS_PD4);
-    PORTD_PIN2CTRL |= PORT_PULLUPEN_bm;
+    PORTD_PIN4CTRL |= PORT_PULLUPEN_bm;
+
+    if (ENS160) {
+        // PD5 is ENS120 CS pin (output pin + pullup)
+        PORTD_DIRSET = (1 << ENS_CS_PD5);
+        PORTD_OUTSET = (1 << ENS_CS_PD5);
+        // PORTD_PIN5CTRL |= PORT_PULLUPEN_bm;
+    }
 }
 
 /* Sets CPU and peripherals clock speed */
@@ -156,10 +172,12 @@ static void initSPI(void) {
 
 /* Initializes pin interrupts */
 static void initInts(void) {
-    // PD2 sense rising edge
+    // PD2 sense rising edge (RFM DIO0)
     PORTD_PIN2CTRL = PORT_ISC_RISING_gc;
-    // PD3 sense rising edge
+    // PD3 sense rising edge (RFM DIO4 (FSK)/DIO1 (LoRa))
     PORTD_PIN3CTRL = PORT_ISC_RISING_gc;
+    // PD6 sense rising edge (ENS160 INT)
+    // PORTD_PIN6CTRL = PORT_ISC_RISING_gc;
 }
 
 /**
@@ -216,14 +234,10 @@ static void printMeas(uint8_t power,
     div_t tdiv = div(data->temperature, 100);
 
     // highly sophisticated IAQ algorithm
-    char *aqi = "excellent";
-    if (data->gas_resistance < 45000L) aqi = "good";
-    if (data->gas_resistance < 35000L) aqi = "moderate";
-    if (data->gas_resistance < 25000L) aqi = "poor";
-    if (data->gas_resistance < 15000L) aqi = "unhealthy";
+    uint8_t aqi = 5 - min(4, data->gas_resistance / 15000);
 
     char buf[128];
-    snprintf(buf, sizeof (buf), "%5lds, %d mV, %d dBm, %c%d.%d°C, %d%%, %d hPa, %ld Ohm (%s), 0x%02x\r\n",
+    snprintf(buf, sizeof (buf), "%5lus, %u mV, %u dBm, %c%u.%u°C, %u%%, %u hPa, %lu Ohm (AQI: %u)\r\n",
             pitints,
             bavg,
             power,
@@ -231,8 +245,7 @@ static void printMeas(uint8_t power,
             humidity,
             pressure,
             data->gas_resistance,
-            aqi,
-            data->status);
+            aqi);
     printString(buf);
 }
 
@@ -249,7 +262,7 @@ int main(void) {
     if (USART) {
         printString("Hello avrenv transmitter!\r\n");
         char rev[16];
-        snprintf(rev, sizeof (rev), "MCU rev. %c%d\r\n",
+        snprintf(rev, sizeof (rev), "MCU rev. %c%u\r\n",
                 (SYSCFG_REVID >> 4) - 1 + 'A',
                 SYSCFG_REVID & SYSCFG_MINOR_gm);
         printString(rev);
@@ -271,11 +284,20 @@ int main(void) {
         printString("Radio init failed!\r\n");
     }
 
-    static Intf intf = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
-    int8_t bme688 = initBME68x(300, 150, 20, &intf);
-    if (bme688 != 0 && USART) {
+    static SpiCs bmeSpiCs = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
+    int8_t bme = bmeInit(300, 100, 20, &bmeSpiCs);
+    if (bme != 0 && USART) {
         printString("BME688 init failed!\r\n");
-        printInt(bme688);
+        printInt(bme);
+    }
+
+    bool ens = false;
+    if (ENS160) {
+        static SpiCs ensSpiCs = {.port = &PORTD_OUT, .pin = ENS_CS_PD5};
+        ens = ensInit(&ensSpiCs);
+        if (!ens && USART) {
+            printString("ENS160 init failed!\r\n");
+        }
     }
 
     // enable global interrupts
@@ -292,39 +314,50 @@ int main(void) {
 
             if (bavg < 2100) {
                 if (USART) printString("Battery low\r\n");
-            } else if (radio && bme688 == 0) {
-                uint8_t power = rfmGetOutputPower();
+            } else {
+                if (ens) {
+                    static EnsData ensdata = {0};
+                    bool ensmeas = ensMeasure(&ensdata);
+                    if (ensmeas && USART) {
+                        char buf[48];
+                        snprintf(buf, sizeof (buf), "AQI: %u, TVOC: %5u ppb, eCO2: %5u ppm\r\n",
+                                ensdata.aqi, ensdata.tvoc, ensdata.eco2);
+                        printString(buf);
+                    }
+                }
+                if (radio && bme == 0) {
+                    uint8_t power = rfmGetOutputPower();
 
-                struct bme68x_data data;
-                bme68xMeasure(&data);
+                    static struct bme68x_data bmedata = {0};
+                    int bmemeas = bmeMeasure(&bmedata);
+                    if (bmemeas == 0) {
+                        uint8_t humidity = min(UCHAR_MAX,
+                                divRoundNearest(bmedata.humidity, 1000));
+                        uint16_t pressure = min(USHRT_MAX,
+                                divRoundNearest(bmedata.pressure, 100));
+                        uint16_t gasres = min(USHRT_MAX,
+                                divRoundNearest(bmedata.gas_resistance, 1000));
 
-                uint8_t humidity = divRoundNearest(data.humidity, 1000);
-                uint16_t pressure = divRoundNearest(data.pressure, 100);
-                uint32_t gas_res = data.gas_resistance / 100; // hOhm
+                        uint8_t payload[] = {
+                            bmedata.temperature >> 8,
+                            bmedata.temperature,
+                            humidity,
+                            pressure >> 8,
+                            pressure,
+                            gasres >> 8,
+                            gasres,
+                            power,
+                            bavg >> 8,
+                            bavg
+                        };
+                        rfmWake();
+                        rfmTransmitPayload(payload, sizeof (payload), 0x24);
+                        rfmSleep();
 
-                uint8_t payload[] = {
-                    data.temperature >> 8,
-                    data.temperature,
-                    humidity,
-                    pressure >> 8,
-                    pressure,
-                    // 18 bit are probably more than sufficient plus
-                    // a simple "DC free" mechanism avoiding some
-                    // consecutive 0's
-                    // data.gas_resistance >> 24,
-                    (gas_res >> 16) | 0xa8,
-                    gas_res >> 8,
-                    gas_res,
-                    power,
-                    bavg >> 8,
-                    bavg
-                };
-                rfmWake();
-                rfmTransmitPayload(payload, sizeof (payload), 0x24);
-                rfmSleep();
-
-                if (USART) {
-                    printMeas(power, humidity, pressure, &data);
+                        if (USART) {
+                            printMeas(power, humidity, pressure, &bmedata);
+                        }
+                    }
                 }
             }
 

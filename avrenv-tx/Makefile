@@ -14,7 +14,7 @@ RFM = 69
 LORA = 0
 
 MAIN = avrenv.c
-SRC = rfm.c spi.c usart.c bme68x/bme68x.c bme688.c
+SRC = rfm.c spi.c usart.c bme68x/bme68x.c bme688.c ens160.c
 
 CC = avr-gcc
 OBJCOPY = avr-objcopy
@@ -43,7 +43,7 @@ OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)
 	
 $(TARGET).elf: spi.h usart.h utils.h bme68x/bme68x.h bme68x/bme68x_defs.h \
-	bme688.h Makefile
+	bme688.h ens160.h Makefile
 
 all: $(TARGET).hex
 

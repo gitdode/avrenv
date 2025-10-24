@@ -23,11 +23,11 @@ static struct bme68x_heatr_conf heater_conf;
  * @param intfPtr port and pin for SPI chip select
  * @return success
  */
-static BME68X_INTF_RET_TYPE bme68xWrite(uint8_t reg,
-                                        const uint8_t *data,
-                                        uint32_t len,
-                                        void *intfPtr) {
-    const Intf intf = *((Intf *)intfPtr);
+static BME68X_INTF_RET_TYPE bmeWrite(uint8_t reg,
+                                     const uint8_t *data,
+                                     uint32_t len,
+                                     void *intfPtr) {
+    const SpiCs intf = *((SpiCs *)intfPtr);
     *intf.port &= ~(1u << intf.pin);
     transmit(reg);
     for (uint32_t i = 0; i < len; i++) {
@@ -48,11 +48,11 @@ static BME68X_INTF_RET_TYPE bme68xWrite(uint8_t reg,
  * @param intfPtr port and pin for SPI chip select
  * @return success
  */
-static BME68X_INTF_RET_TYPE bme68xRead(uint8_t reg,
-                                       uint8_t *data,
-                                       uint32_t len,
-                                       void *intfPtr) {
-    const Intf intf = *((Intf *)intfPtr);
+static BME68X_INTF_RET_TYPE bmeRead(uint8_t reg,
+                                    uint8_t *data,
+                                    uint32_t len,
+                                    void *intfPtr) {
+    const SpiCs intf = *((SpiCs *)intfPtr);
     *intf.port &= ~(1u << intf.pin);
     transmit(reg);
     for (uint32_t i = 0; i < len; i++) {
@@ -70,23 +70,23 @@ static BME68X_INTF_RET_TYPE bme68xRead(uint8_t reg,
  * @param period in microseconds
  * @param intfPtr not used
  */
-static void bme68xDelayUs(uint32_t period,
-                          void *intfPtr) {
+static void bmeDelayUs(uint32_t period,
+                       void *intfPtr) {
     _delay_us(period);
 }
 
-int8_t initBME68x(uint16_t temp,
-                  uint16_t dur,
-                  uint8_t amb,
-                  Intf *intf) {
+int8_t bmeInit(uint16_t temp,
+               uint16_t dur,
+               uint8_t amb,
+               SpiCs *intf) {
     _delay_ms(2);
 
     int8_t result;
 
     dev.intf = BME68X_SPI_INTF;
-    dev.write = bme68xWrite;
-    dev.read = bme68xRead;
-    dev.delay_us = bme68xDelayUs;
+    dev.write = bmeWrite;
+    dev.read = bmeRead;
+    dev.delay_us = bmeDelayUs;
     dev.intf_ptr = intf;
     dev.amb_temp = amb;
 
@@ -116,8 +116,8 @@ int8_t initBME68x(uint16_t temp,
     return BME68X_OK;
 }
 
-int8_t bme68xSetHeaterConf(uint16_t temp,
-                           uint16_t dur) {
+int8_t bmeSetHeaterConf(uint16_t temp,
+                        uint16_t dur) {
     int8_t result;
     heater_conf.enable = BME68X_ENABLE;
     heater_conf.heatr_temp = temp;
@@ -130,7 +130,7 @@ int8_t bme68xSetHeaterConf(uint16_t temp,
     return BME68X_OK;
 }
 
-int8_t bme68xMeasure(struct bme68x_data *data) {
+int8_t bmeMeasure(struct bme68x_data *data) {
 
     int8_t result;
     uint8_t n_data = 0;
@@ -142,7 +142,7 @@ int8_t bme68xMeasure(struct bme68x_data *data) {
         }
 
         uint32_t meas_dur = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, &dev) +
-                heater_conf.heatr_dur * 1000L;
+                heater_conf.heatr_dur * 1000UL;
         dev.delay_us(meas_dur, dev.intf_ptr);
 
         result = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, &dev);
