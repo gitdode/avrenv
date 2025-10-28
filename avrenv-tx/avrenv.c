@@ -32,6 +32,7 @@
 #endif
 #include "bme688.h"
 #include "ens160.h"
+#include "pa1616s.h"
 
 /* Timebase used for timing internal delays */
 #define TIMEBASE_VALUE ((uint8_t) ceil(F_CPU * 0.000001))
@@ -40,7 +41,7 @@
     #define LORA    0
 #endif
 
-#define ENS160      1
+#define ENS160      0
 
 #define USART       1
 
@@ -93,6 +94,10 @@ static void initPins(void) {
     PORTC_PINCTRLUPD = 0xff;
     PORTD_PINCTRLUPD = 0xff;
     PORTF_PINCTRLUPD = 0xff;
+
+    // enable input on USART0 and USART1 RX pins
+    PORTA_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
+    PORTC_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
 
     // set MOSI and SCK as output pin
     PORTA_DIRSET = (1 << MOSI_PA4);
@@ -299,6 +304,11 @@ int main(void) {
         }
     }
 
+    bool pas = pasInit();
+    if (USART && !pas) {
+        printString("PA1616S init failed!\r\n");
+    }
+
     // enable global interrupts
     sei();
 
@@ -358,6 +368,14 @@ int main(void) {
                         }
                     }
                 }
+
+                if (pas) {
+                    char data[255];
+                    getNmeaMsg(data, sizeof (data));
+                    printString(data);
+                    printString("\r\n");
+                }
+
             }
 
             // wait for USART tx to be done (before going to sleep)

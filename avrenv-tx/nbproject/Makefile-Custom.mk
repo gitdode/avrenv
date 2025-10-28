@@ -39,10 +39,10 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/7eff1f7e/bme688.o \
 	${OBJECTDIR}/_ext/3d12a1ed/bme68x.o \
 	${OBJECTDIR}/_ext/7eff1f7e/ens160.o \
+	${OBJECTDIR}/_ext/7eff1f7e/pa1616s.o \
 	${OBJECTDIR}/_ext/7eff1f7e/rfm.o \
 	${OBJECTDIR}/_ext/7eff1f7e/spi.o \
-	${OBJECTDIR}/_ext/7eff1f7e/usart.o \
-	${OBJECTDIR}/cksumxor.o
+	${OBJECTDIR}/_ext/7eff1f7e/usart.o
 
 
 # C Compiler Flags
@@ -85,6 +85,10 @@ ${OBJECTDIR}/_ext/7eff1f7e/ens160.o: /home/dode/dev/avrenv/avrenv-tx/ens160.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
 	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/_ext/7eff1f7e/ens160.o /home/dode/dev/avrenv/avrenv-tx/ens160.c
 
+${OBJECTDIR}/_ext/7eff1f7e/pa1616s.o: /home/dode/dev/avrenv/avrenv-tx/pa1616s.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/_ext/7eff1f7e/pa1616s.o /home/dode/dev/avrenv/avrenv-tx/pa1616s.c
+
 ${OBJECTDIR}/_ext/7eff1f7e/rfm.o: /home/dode/dev/avrenv/avrenv-tx/rfm.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
 	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/_ext/7eff1f7e/rfm.o /home/dode/dev/avrenv/avrenv-tx/rfm.c
@@ -96,10 +100,6 @@ ${OBJECTDIR}/_ext/7eff1f7e/spi.o: /home/dode/dev/avrenv/avrenv-tx/spi.c
 ${OBJECTDIR}/_ext/7eff1f7e/usart.o: /home/dode/dev/avrenv/avrenv-tx/usart.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
 	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/_ext/7eff1f7e/usart.o /home/dode/dev/avrenv/avrenv-tx/usart.c
-
-${OBJECTDIR}/cksumxor.o: cksumxor.c
-	${MKDIR} -p ${OBJECTDIR}
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/cksumxor.o cksumxor.c
 
 # Subprojects
 .build-subprojects:
