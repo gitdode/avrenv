@@ -48,6 +48,9 @@
 /* Awake/busy interval in seconds */
 #define INTERVAL    8
 
+/* Max. length of an NMEA sentence */
+#define NMEA_MAX    255
+
 /* Periodic interrupt timer interrupt count (seconds) */
 static volatile uint32_t pitints = 0;
 
@@ -60,9 +63,6 @@ ISR(RTC_PIT_vect) {
     RTC_PITINTFLAGS |= RTC_PI_bm;
     pitints++;
 }
-
-/* ADC empty interrupt */
-EMPTY_INTERRUPT(ADC0_RESRDY_vect);
 
 /**
  * PORTD pin interrupt handlers.
@@ -162,8 +162,6 @@ static void initADC(void) {
     // ADC0_PGACTRL |= (ADC_PGAEN_bm);
     // configure single 12-bit mode of operation
     ADC0_COMMAND |= ADC_MODE_SINGLE_12BIT_gc;
-    // enable result ready interrupt
-    ADC0_INTCTRL |= ADC_RESRDY_bm;
 }
 
 /* Initializes the SPI */
@@ -370,8 +368,8 @@ int main(void) {
                 }
 
                 if (pas) {
-                    char data[255];
-                    getNmeaMsg(data, sizeof (data));
+                    char data[NMEA_MAX];
+                    getNmeaMsg(data, NMEA_MAX);
                     printString(data);
                     printString("\r\n");
                 }
