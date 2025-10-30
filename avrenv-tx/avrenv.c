@@ -35,7 +35,13 @@
 #include "pa1616s.h"
 
 /* Timebase used for timing internal delays */
-#define TIMEBASE_VALUE ((uint8_t) ceil(F_CPU * 0.000001))
+#define TIMEBASE_VALUE  ((uint8_t) ceil(F_CPU * 0.000001))
+
+/* Enables periodic interrupt timer */
+#define enable_pit()    RTC_PITCTRLA |= RTC_PITEN_bm
+
+/* Enables periodic interrupt timer */
+#define disable_pit()   RTC_PITCTRLA &= ~RTC_PITEN_bm
 
 #ifndef LORA
     #define LORA    0
@@ -47,9 +53,6 @@
 
 /* Awake/busy interval in seconds */
 #define INTERVAL    8
-
-/* Max. length of an NMEA sentence */
-#define NMEA_MAX    255
 
 /* Periodic interrupt timer interrupt count (seconds) */
 static volatile uint32_t pitints = 0;
@@ -144,8 +147,8 @@ static void initRTC(void) {
     RTC_PITINTCTRL |= RTC_PI_bm;
     // wait for PITCTRLA to be synchronized
     loop_until_bit_is_clear(RTC_PITSTATUS, RTC_CTRLBUSY_bp);
-    // set periodic interrupt period in RTC clock cycles, enable PIT
-    RTC_PITCTRLA |= RTC_PERIOD_CYC32768_gc | RTC_PITEN_bm;
+    // set periodic interrupt period in RTC clock cycles
+    RTC_PITCTRLA |= RTC_PERIOD_CYC32768_gc;
 }
 
 /* Initializes the ADC */
@@ -307,6 +310,8 @@ int main(void) {
         printString("PA1616S init failed!\r\n");
     }
 
+    enable_pit();
+
     // enable global interrupts
     sei();
 
@@ -368,10 +373,8 @@ int main(void) {
                 }
 
                 if (pas) {
-                    char data[NMEA_MAX];
-                    getNmeaMsg(data, NMEA_MAX);
-                    printString(data);
-                    printString("\r\n");
+                    NmeaData data = {0};
+                    pasRead(&data);
                 }
 
             }

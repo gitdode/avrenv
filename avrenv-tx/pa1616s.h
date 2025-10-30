@@ -10,9 +10,23 @@
 
 #include "usart.h"
 
+#define NMEA_LEN    255
+#define NMEA_CNT    2
+
+#define PAS_ACK         "$PMTK001,314,3*36"
+/* Output only GGA and RMC */
+#define PAS_SET_OUTPUT  "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n"
+
+typedef struct {
+    bool fix;
+    uint32_t lat;
+    uint32_t lon;
+    uint16_t alt;
+    uint16_t speed;
+} NmeaData;
+
 bool pasInit(void);
 
-uint8_t getNmeaMsg(char *data, uint8_t len);
+bool pasRead(NmeaData *data);
 
 #endif /* PA1616S_H */
-
