@@ -12,10 +12,10 @@
 static void writeCmd(const char *data) {
     USART0_STATUS |= USART_TXCIF_bm;
     uint8_t i = 0;
-    char c;
-    while ((c = data[i++]) != '\0') {
+    while (data[i]) {
         loop_until_bit_is_set(USART0_STATUS, USART_DREIF_bp);
-        USART0_TXDATAL = c;
+        USART0_TXDATAL = data[i];
+        i++;
     }
 }
 
@@ -66,34 +66,55 @@ bool pasInit(void) {
     USART0_CTRLC = (0x03 << USART_CHSIZE_gp);
     // set TxD as output pin
     PORTA_DIRSET |= (1 << USART_TX_PA0);
-    // enable transmitter and receiver
-    USART0_CTRLB |= (1 << USART_TXEN_bp) | (1 << USART_RXEN_bp);
+    // enable transmitter
+    USART0_CTRLB |= (1 << USART_TXEN_bp);
 
-    // FIXME first read all other acks on power on
+    /*
+     $CDACK,34,0*79
+     $CDACK,103*50
+     $CDACK,105*56
+     $PMTK011,MTKGPS*08
+     $PMTK010,001*2E
+     $PMTK010,002*2D
+     */
 
-    // output only GGA and RMC
-    writeCmd(PAS_SET_OUTPUT);
+    // ignore (power on) messages for 1 second
+    _delay_ms(1000);
 
-    // read ACK
+    // configure no output and wait for it to stop
+    writeCmd(PAS_OUT_NONE);
+    _delay_ms(1000);
+
+    enable_rx();
+
+    // configure to output only GGA and RMC messages
+    writeCmd(PAS_OUT_GGA_RMC);
+
+    // read ack
     char data[NMEA_LEN];
     readSingle(data);
+
+    disable_rx();
+
+    // check ack
     int8_t ack = strcmp(PAS_ACK, data);
 
-    // disable receiver
-    USART0_CTRLB &= ~(1 << USART_RXEN_bp);
-
-    return true;
+    return ack == 0;
 }
 
 bool pasRead(NmeaData *data) {
     char nmea[NMEA_CNT][NMEA_LEN];
-    // enable receiver
-    USART0_CTRLB |= (1 << USART_RXEN_bp);
+    enable_rx();
     uint8_t cnt = grabMany(nmea);
-    // disable receiver
+    disable_rx();
     USART0_CTRLB &= ~(1 << USART_RXEN_bp);
 
     for (uint8_t i = 0; i < cnt; i++) {
+        if (strncmp("$GPGGA", nmea[i], 6) == 0) {
+            printString("GGA\r\n");
+        } else if (strncmp("$GPRMC", nmea[i], 6) == 0) {
+            printString("RMC\r\n");
+        }
         printString(nmea[i]);
         printString("\r\n");
     }
