@@ -40,9 +40,6 @@
 /* Enables periodic interrupt timer */
 #define enable_pit()    RTC_PITCTRLA |= RTC_PITEN_bm
 
-/* Enables periodic interrupt timer */
-#define disable_pit()   RTC_PITCTRLA &= ~RTC_PITEN_bm
-
 #ifndef LORA
     #define LORA    0
 #endif
@@ -310,6 +307,7 @@ int main(void) {
         printString("PA1616S init failed!\r\n");
     }
 
+    // start PIT after (lengthy) initialization
     enable_pit();
 
     // enable global interrupts
@@ -375,6 +373,11 @@ int main(void) {
                 if (pas) {
                     NmeaData data = {0};
                     pasRead(&data);
+                    char buf[64];
+                    snprintf(buf, sizeof (buf), "%lu, %u, %u, %lu, %lu, %u, %u\r\n",
+                            data.utc, data.fix, data.sat,
+                            data.lat, data.lon, data.alt, data.speed);
+                    printString(buf);
                 }
 
             }

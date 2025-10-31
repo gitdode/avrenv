@@ -21,7 +21,7 @@ static void writeCmd(const char *data) {
 
 static uint8_t readSingle(char *data) {
     uint8_t pos = 0;
-    while (pos < NMEA_LEN - 1) {
+    while (pos < PAS_NMEA_LEN - 1) {
         if (bit_is_set(USART0_STATUS, USART_RXCIF_bp)) {
             char c = USART0_RXDATAL;
             if (c == '\r') continue;
@@ -35,16 +35,17 @@ static uint8_t readSingle(char *data) {
     return pos;
 }
 
-static uint8_t grabMany(char data[NMEA_CNT][NMEA_LEN]) {
+static uint8_t grabMany(char data[PAS_NMEA_CNT][PAS_NMEA_LEN]) {
     uint8_t cnt = 0;
-    while (cnt < NMEA_CNT) {
+    while (cnt < PAS_NMEA_CNT) {
         uint8_t pos = 0;
         bool msg = false;
-        while (pos < NMEA_LEN - 1) {
+        while (pos < PAS_NMEA_LEN - 1) {
             if (bit_is_set(USART0_STATUS, USART_RXCIF_bp)) {
                 char c = USART0_RXDATAL;
-                if (!msg && c == '$') msg = true;
-                if (msg) {
+                if (!msg) {
+                    if (c == '$') msg = true;
+                } else {
                     if (c == '\r') continue;
                     if (c == '\n') break;
                     data[cnt][pos] = c;
@@ -91,7 +92,7 @@ bool pasInit(void) {
     writeCmd(PAS_OUT_GGA_RMC);
 
     // read ack
-    char data[NMEA_LEN];
+    char data[PAS_NMEA_LEN];
     readSingle(data);
 
     disable_rx();
@@ -103,21 +104,33 @@ bool pasInit(void) {
 }
 
 bool pasRead(NmeaData *data) {
-    char nmea[NMEA_CNT][NMEA_LEN];
+    char nmea[PAS_NMEA_CNT][PAS_NMEA_LEN];
     enable_rx();
     uint8_t cnt = grabMany(nmea);
     disable_rx();
-    USART0_CTRLB &= ~(1 << USART_RXEN_bp);
 
     for (uint8_t i = 0; i < cnt; i++) {
-        if (strncmp("$GPGGA", nmea[i], 6) == 0) {
-            printString("GGA\r\n");
-        } else if (strncmp("$GPRMC", nmea[i], 6) == 0) {
-            printString("RMC\r\n");
+        char *token;
+        char *string = nmea[i];
+        if (strncmp(PAS_GPGGA, nmea[i], PAS_ID_LEN) == 0) {
+            uint8_t i = 0;
+            while ((token = strsep(&string, PAS_NMEA_FS))) {
+                if (i == 1) data->utc = atol(token);
+                if (i == 2) data->lat = strtof(token, NULL) * 10000;
+                if (i == 4) data->lon = strtof(token, NULL) * 10000;
+                if (i == 6) data->fix = atol(token);
+                if (i == 7) data->sat = atol(token);
+                if (i == 9) data->alt = strtof(token, NULL) * 10;
+                i++;
+            };
+        } else if (strncmp(PAS_GPRMC, nmea[i], PAS_ID_LEN) == 0) {
+            uint8_t i = 0;
+            while ((token = strsep(&string, PAS_NMEA_FS))) {
+                if (i == 7) data->speed = strtof(token, NULL) * 100;
+                i++;
+            };
         }
-        printString(nmea[i]);
-        printString("\r\n");
     }
 
-    return true;
+    return cnt != PAS_NMEA_CNT;
 }
