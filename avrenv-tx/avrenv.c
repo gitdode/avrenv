@@ -371,13 +371,17 @@ int main(void) {
                 }
 
                 if (pas) {
-                    NmeaData data = {0};
-                    pasRead(&data);
-                    char buf[64];
-                    snprintf(buf, sizeof (buf), "%lu, %u, %u, %lu, %lu, %u, %u\r\n",
-                            data.utc, data.fix, data.sat,
-                            data.lat, data.lon, data.alt, data.speed);
-                    printString(buf);
+                    NmeaData pas = {0};
+                    bool pasread = pasRead(&pas);
+                    if (!pasread) {
+                        char buf[64];
+                        snprintf(buf, sizeof (buf), "%lu, %u, %u, %lu, %lu, %u, %u\r\n",
+                                pas.utc, pas.fix, pas.sat,
+                                pas.lat, pas.lon, pas.alt, pas.speed);
+                        printString(buf);
+                    } else {
+                        printString("Reading from PA1616S failed!\r\n");
+                    }
                 }
 
             }

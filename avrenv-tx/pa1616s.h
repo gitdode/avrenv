@@ -17,7 +17,9 @@
 #define PAS_NMEA_FS     ","
 #define PAS_ID_LEN      5
 #define PAS_GPGGA       "GPGGA"
+#define PAS_GPGGA_LEN   15
 #define PAS_GPRMC       "GPRMC"
+#define PAS_GPRMC_LEN   13
 
 /* Command acknowledgement */
 #define PAS_ACK         "$PMTK001,314,3*36"

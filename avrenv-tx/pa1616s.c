@@ -103,6 +103,7 @@ bool pasInit(void) {
     return ack == 0;
 }
 
+// TODO check checksum
 bool pasRead(NmeaData *data) {
     char nmea[PAS_NMEA_CNT][PAS_NMEA_LEN];
     enable_rx();
@@ -123,12 +124,16 @@ bool pasRead(NmeaData *data) {
                 if (i == 9) data->alt = strtof(token, NULL) * 10;
                 i++;
             };
+
+            if (i != PAS_GPGGA_LEN) return false;
         } else if (strncmp(PAS_GPRMC, nmea[i], PAS_ID_LEN) == 0) {
             uint8_t i = 0;
             while ((token = strsep(&string, PAS_NMEA_FS))) {
                 if (i == 7) data->speed = strtof(token, NULL) * 100;
                 i++;
             };
+
+            if (i != PAS_GPRMC_LEN) return false;
         }
     }
 
