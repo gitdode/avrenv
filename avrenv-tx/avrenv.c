@@ -32,15 +32,19 @@
 #endif
 #include "bme688.h"
 #include "ens160.h"
+#include "pa1616s.h"
 
 /* Timebase used for timing internal delays */
-#define TIMEBASE_VALUE ((uint8_t) ceil(F_CPU * 0.000001))
+#define TIMEBASE_VALUE  ((uint8_t) ceil(F_CPU * 0.000001))
+
+/* Enables periodic interrupt timer */
+#define enable_pit()    RTC_PITCTRLA |= RTC_PITEN_bm
 
 #ifndef LORA
     #define LORA    0
 #endif
 
-#define ENS160      1
+#define ENS160      0
 
 #define USART       1
 
@@ -59,9 +63,6 @@ ISR(RTC_PIT_vect) {
     RTC_PITINTFLAGS |= RTC_PI_bm;
     pitints++;
 }
-
-/* ADC empty interrupt */
-EMPTY_INTERRUPT(ADC0_RESRDY_vect);
 
 /**
  * PORTD pin interrupt handlers.
@@ -93,6 +94,10 @@ static void initPins(void) {
     PORTC_PINCTRLUPD = 0xff;
     PORTD_PINCTRLUPD = 0xff;
     PORTF_PINCTRLUPD = 0xff;
+
+    // enable input on USART0 and USART1 RX pins
+    PORTA_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
+    PORTC_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
 
     // set MOSI and SCK as output pin
     PORTA_DIRSET = (1 << MOSI_PA4);
@@ -139,8 +144,8 @@ static void initRTC(void) {
     RTC_PITINTCTRL |= RTC_PI_bm;
     // wait for PITCTRLA to be synchronized
     loop_until_bit_is_clear(RTC_PITSTATUS, RTC_CTRLBUSY_bp);
-    // set periodic interrupt period in RTC clock cycles, enable PIT
-    RTC_PITCTRLA |= RTC_PERIOD_CYC32768_gc | RTC_PITEN_bm;
+    // set periodic interrupt period in RTC clock cycles
+    RTC_PITCTRLA |= RTC_PERIOD_CYC32768_gc;
 }
 
 /* Initializes the ADC */
@@ -157,8 +162,6 @@ static void initADC(void) {
     // ADC0_PGACTRL |= (ADC_PGAEN_bm);
     // configure single 12-bit mode of operation
     ADC0_COMMAND |= ADC_MODE_SINGLE_12BIT_gc;
-    // enable result ready interrupt
-    ADC0_INTCTRL |= ADC_RESRDY_bm;
 }
 
 /* Initializes the SPI */
@@ -299,6 +302,14 @@ int main(void) {
         }
     }
 
+    bool pas = pasInit();
+    if (USART && !pas) {
+        printString("PA1616S init failed!\r\n");
+    }
+
+    // start PIT after (lengthy) initialization
+    enable_pit();
+
     // enable global interrupts
     sei();
 
@@ -358,6 +369,23 @@ int main(void) {
                         }
                     }
                 }
+
+                if (pas) {
+                    NmeaData pas = {0};
+                    bool pasread = pasRead(&pas);
+                    if (!pasread) {
+                        char buf[128];
+                        snprintf(buf, sizeof (buf),
+                                "UTC: %lu, Fix: %u, Sat: %u, Lat: %lu, Lon: %lu, Alt: %u m, Speed: %u knots\r\n",
+                                pas.utc, pas.fix, pas.sat,
+                                pas.lat, pas.lon,
+                                pas.alt / 10, pas.speed / 100);
+                        printString(buf);
+                    } else {
+                        printString("Reading from PA1616S failed!\r\n");
+                    }
+                }
+
             }
 
             // wait for USART tx to be done (before going to sleep)

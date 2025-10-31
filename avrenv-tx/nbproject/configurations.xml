@@ -12,6 +12,8 @@
       <in>bme688.h</in>
       <in>ens160.c</in>
       <in>ens160.h</in>
+      <in>pa1616s.c</in>
+      <in>pa1616s.h</in>
       <in>pins.h</in>
       <in>rfm.c</in>
       <in>spi.c</in>
@@ -94,6 +96,16 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="/home/dode/dev/avrenv/avrenv-tx/pa1616s.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/avrenv-tx/pa1616s.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="/home/dode/dev/avrenv/avrenv-tx/pins.h"
             ex="false"
             tool="3"
@@ -118,8 +130,6 @@
             ex="false"
             tool="0"
             flavor2="0">
-      </item>
-      <item path="cksumxor.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
   </confs>

@@ -54,12 +54,12 @@ void getUSARTData(char *data, size_t size) {
 }
 
 void printString(const char *data) {
-    uint8_t i = 0;
-    char c;
     USART1_STATUS |= USART_TXCIF_bm;
-    while ((c = data[i++]) != '\0') {
+    uint8_t i = 0;
+    while (data[i]) {
         loop_until_bit_is_set(USART1_STATUS, USART_DREIF_bp);
-        USART1_TXDATAL = c;
+        USART1_TXDATAL = data[i];
+        i++;
     }
 }
 
