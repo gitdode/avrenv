@@ -9,6 +9,11 @@
 
 #include "pa1616s.h"
 
+/**
+ * Writes the given command to the module.
+ *
+ * @param data command
+ */
 static void writeCmd(const char *data) {
     USART0_STATUS |= USART_TXCIF_bm;
     uint8_t i = 0;
@@ -19,6 +24,13 @@ static void writeCmd(const char *data) {
     }
 }
 
+/**
+ * Reads one line of output from the module.
+ *
+ * @param data line of output
+ * @return length of output
+ */
+// TODO timeout blocking function?
 static uint8_t readSingle(char *data) {
     uint8_t pos = 0;
     while (pos < PAS_NMEA_LEN - 1) {
@@ -35,6 +47,14 @@ static uint8_t readSingle(char *data) {
     return pos;
 }
 
+/**
+ * Reads many lines of output from the module,
+ * starting with the first occurrence of '$'.
+ *
+ * @param data lines of output
+ * @return number of lines read
+ */
+// TODO timeout blocking function?
 static uint8_t grabMany(char data[PAS_NMEA_CNT][PAS_NMEA_LEN]) {
     uint8_t cnt = 0;
     while (cnt < PAS_NMEA_CNT) {

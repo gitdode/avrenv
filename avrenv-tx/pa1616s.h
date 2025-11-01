@@ -33,6 +33,7 @@
 /* Disables USART receiver */
 #define disable_rx()    USART0_CTRLB &= ~(1 << USART_RXEN_bp)
 
+/* Data read off the GPS module */
 typedef struct {
     /* Timestamp in UTC: hhmmss */
     uint32_t utc;

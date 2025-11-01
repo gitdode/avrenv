@@ -376,7 +376,7 @@ int main(void) {
                     if (!pasread) {
                         char buf[128];
                         snprintf(buf, sizeof (buf),
-                                "UTC: %lu, Fix: %u, Sat: %u, Lat: %lu, Lon: %lu, Alt: %u m, Speed: %u knots\r\n",
+                                "UTC: %06lu, Fix: %u, Sat: %u, Lat: %lu, Lon: %lu, Alt: %u m, Speed: %u knots\r\n",
                                 pas.utc, pas.fix, pas.sat,
                                 pas.lat, pas.lon,
                                 pas.alt / 10, pas.speed / 100);
