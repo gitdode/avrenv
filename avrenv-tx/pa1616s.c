@@ -135,12 +135,15 @@ bool pasRead(NmeaData *data) {
         if (strncmp(PAS_GPGGA, msg, PAS_ID_LEN) == 0) {
             uint8_t i = 0;
             while ((token = strsep(&msg, PAS_NMEA_FS))) {
-                if (i == 1) data->utc = atol(token);
-                if (i == 2) data->lat = strtof(token, NULL) * 10000;
-                if (i == 4) data->lon = strtof(token, NULL) * 10000;
-                if (i == 6) data->fix = atol(token);
-                if (i == 7) data->sat = atol(token);
-                if (i == 9) data->alt = strtof(token, NULL) * 10;
+                switch (i) {
+                    case 1: data->utc = atol(token); break;
+                    case 2: data->lat = strtof(token, NULL) * 10000; break;
+                    case 4: data->lon = strtof(token, NULL) * 10000; break;
+                    case 6: data->fix = atol(token); break;
+                    case 7: data->sat = atol(token); break;
+                    case 9: data->alt = strtof(token, NULL) * 10; break;
+                    default: break;
+                }
                 i++;
             };
 
@@ -148,7 +151,10 @@ bool pasRead(NmeaData *data) {
         } else if (strncmp(PAS_GPRMC, msg, PAS_ID_LEN) == 0) {
             uint8_t i = 0;
             while ((token = strsep(&msg, PAS_NMEA_FS))) {
-                if (i == 7) data->speed = strtof(token, NULL) * 100;
+                switch (i) {
+                    case 7: data->speed = strtof(token, NULL) * 100; break;
+                    default: break;
+                }
                 i++;
             };
 

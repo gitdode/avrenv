@@ -242,14 +242,10 @@ static void printMeas(uint8_t power,
     char buf[128];
     snprintf(buf, sizeof (buf),
             "%5lus, %u mV, %u dBm, %c%u.%u°C, %u%%, %u hPa, %lu Ohm (AQI: %u)\r\n",
-            pitints,
-            bavg,
-            power,
+            pitints, bavg, power,
             data->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
-            humidity,
-            pressure,
-            data->gas_resistance,
-            aqi);
+            humidity, pressure,
+            data->gas_resistance, aqi);
     printString(buf);
 
     snprintf(buf, sizeof (buf),
