@@ -47,7 +47,7 @@ typedef struct {
     /* Number of satellites used */
     uint8_t sat;
     /* Altitude in meters x 10 */
-    uint16_t alt;
+    uint32_t alt;
     /* Speed over ground in knots * 100 */
     uint16_t speed;
 } NmeaData;

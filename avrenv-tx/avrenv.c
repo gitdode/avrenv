@@ -232,14 +232,16 @@ static int16_t measureBat(void) {
 static void printMeas(uint8_t power,
                       uint8_t humidity,
                       uint16_t pressure,
-                      struct bme68x_data *data) {
+                      struct bme68x_data *data,
+                      NmeaData *pasdata) {
     div_t tdiv = div(data->temperature, 100);
 
     // highly sophisticated IAQ algorithm
     uint8_t aqi = 5 - min(4, data->gas_resistance / 15000);
 
     char buf[128];
-    snprintf(buf, sizeof (buf), "%5lus, %u mV, %u dBm, %c%u.%u°C, %u%%, %u hPa, %lu Ohm (AQI: %u)\r\n",
+    snprintf(buf, sizeof (buf),
+            "%5lus, %u mV, %u dBm, %c%u.%u°C, %u%%, %u hPa, %lu Ohm (AQI: %u)\r\n",
             pitints,
             bavg,
             power,
@@ -248,6 +250,13 @@ static void printMeas(uint8_t power,
             pressure,
             data->gas_resistance,
             aqi);
+    printString(buf);
+
+    snprintf(buf, sizeof (buf),
+            "UTC: %06lu, Fix: %u, Sat: %u, Lat: %lu, Lon: %lu, Alt: %lu m, Speed: %u knots\r\n",
+            pasdata->utc, pasdata->fix, pasdata->sat,
+            pasdata->lat, pasdata->lon,
+            pasdata->alt / 10, pasdata->speed / 100);
     printString(buf);
 }
 
@@ -335,18 +344,24 @@ int main(void) {
                         printString(buf);
                     }
                 }
-                if (radio && bme == 0) {
+                if (radio && bme == 0 && pas) {
                     uint8_t power = rfmGetOutputPower();
 
                     static struct bme68x_data bmedata = {0};
                     int bmemeas = bmeMeasure(&bmedata);
-                    if (bmemeas == 0) {
+
+                    NmeaData pasdata = {0};
+                    bool pasread = pasRead(&pasdata);
+
+                    if (bmemeas == 0 && pasread) {
                         uint8_t humidity = min(UCHAR_MAX,
                                 divRoundNearest(bmedata.humidity, 1000));
                         uint16_t pressure = min(USHRT_MAX,
                                 divRoundNearest(bmedata.pressure, 100));
                         uint16_t gasres = min(USHRT_MAX,
                                 divRoundNearest(bmedata.gas_resistance, 1000));
+                        uint16_t alt = min(USHRT_MAX,
+                                divRoundNearest(pasdata.alt, 10));
 
                         uint8_t payload[] = {
                             bmedata.temperature >> 8,
@@ -356,6 +371,20 @@ int main(void) {
                             pressure,
                             gasres >> 8,
                             gasres,
+                            pasdata.fix,
+                            pasdata.sat,
+                            pasdata.lat >> 24,
+                            pasdata.lat >> 16,
+                            pasdata.lat >> 8,
+                            pasdata.lat,
+                            pasdata.lon >> 24,
+                            pasdata.lon >> 16,
+                            pasdata.lon >> 8,
+                            pasdata.lon,
+                            alt >> 8,
+                            alt,
+                            pasdata.speed >> 8,
+                            pasdata.speed,
                             power,
                             bavg >> 8,
                             bavg
@@ -365,27 +394,10 @@ int main(void) {
                         rfmSleep();
 
                         if (USART) {
-                            printMeas(power, humidity, pressure, &bmedata);
+                            printMeas(power, humidity, pressure, &bmedata, &pasdata);
                         }
                     }
                 }
-
-                if (pas) {
-                    NmeaData pas = {0};
-                    bool pasread = pasRead(&pas);
-                    if (pasread) {
-                        char buf[128];
-                        snprintf(buf, sizeof (buf),
-                                "UTC: %06lu, Fix: %u, Sat: %u, Lat: %lu, Lon: %lu, Alt: %u m, Speed: %u knots\r\n",
-                                pas.utc, pas.fix, pas.sat,
-                                pas.lat, pas.lon,
-                                pas.alt / 10, pas.speed / 100);
-                        printString(buf);
-                    } else {
-                        printString("Reading from PA1616S failed!\r\n");
-                    }
-                }
-
             }
 
             // wait for USART tx to be done (before going to sleep)
