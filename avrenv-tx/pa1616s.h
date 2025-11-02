@@ -22,7 +22,7 @@
 #define PAS_GPRMC_LEN   13
 
 /* Command acknowledgement */
-#define PAS_ACK         "$PMTK001,314,3*36"
+#define PAS_ACK         "PMTK001,314,3*36"
 /* Output nothing */
 #define PAS_OUT_NONE    "$PMTK314,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n"
 /* Output only GGA and RMC */

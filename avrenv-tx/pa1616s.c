@@ -25,29 +25,6 @@ static void writeCmd(const char *data) {
 }
 
 /**
- * Reads one line of output from the module.
- *
- * @param data line of output
- * @return length of output
- */
-// TODO timeout blocking function?
-static uint8_t readSingle(char *data) {
-    uint8_t pos = 0;
-    while (pos < PAS_NMEA_LEN - 1) {
-        if (bit_is_set(USART0_STATUS, USART_RXCIF_bp)) {
-            char c = USART0_RXDATAL;
-            if (c == '\r') continue;
-            if (c == '\n') break;
-            data[pos] = c;
-            pos++;
-        }
-    }
-    data[pos] = '\0';
-
-    return pos;
-}
-
-/**
  * Reads many lines of output from the module,
  * starting with the first occurrence of '$'.
  *
@@ -55,12 +32,12 @@ static uint8_t readSingle(char *data) {
  * @return number of lines read
  */
 // TODO timeout blocking function?
-static uint8_t grabMany(char data[PAS_NMEA_CNT][PAS_NMEA_LEN]) {
+static uint8_t readOut(char *data, uint8_t num, uint16_t len) {
     uint8_t cnt = 0;
-    while (cnt < PAS_NMEA_CNT) {
-        uint8_t pos = 0;
+    for (; cnt < num; cnt++) {
+        uint16_t pos = cnt * PAS_NMEA_LEN;
         bool msg = false;
-        while (pos < PAS_NMEA_LEN - 1) {
+        while (pos < len - 1) {
             if (bit_is_set(USART0_STATUS, USART_RXCIF_bp)) {
                 char c = USART0_RXDATAL;
                 if (!msg) {
@@ -68,13 +45,12 @@ static uint8_t grabMany(char data[PAS_NMEA_CNT][PAS_NMEA_LEN]) {
                 } else {
                     if (c == '\r') continue;
                     if (c == '\n') break;
-                    data[cnt][pos] = c;
+                    data[pos] = c;
                     pos++;
                 }
             }
         }
-        data[cnt][pos] = '\0';
-        cnt++;
+        data[pos] = '\0';
     }
 
     return cnt;
@@ -113,7 +89,7 @@ bool pasInit(void) {
 
     // read ack
     char data[PAS_NMEA_LEN];
-    readSingle(data);
+    readOut(data, 1, PAS_NMEA_LEN);
 
     disable_rx();
 
@@ -125,15 +101,15 @@ bool pasInit(void) {
 
 // TODO check checksum
 bool pasRead(NmeaData *data) {
-    char nmea[PAS_NMEA_CNT][PAS_NMEA_LEN];
+    char nmea[PAS_NMEA_CNT * PAS_NMEA_LEN];
     enable_rx();
-    uint8_t cnt = grabMany(nmea);
+    uint8_t cnt = readOut(nmea, PAS_NMEA_CNT, PAS_NMEA_CNT * PAS_NMEA_LEN);
     disable_rx();
 
     for (uint8_t i = 0; i < cnt; i++) {
         char *token;
-        char *string = nmea[i];
-        if (strncmp(PAS_GPGGA, nmea[i], PAS_ID_LEN) == 0) {
+        char *string = &nmea[i * PAS_NMEA_LEN];
+        if (strncmp(PAS_GPGGA, string, PAS_ID_LEN) == 0) {
             uint8_t i = 0;
             while ((token = strsep(&string, PAS_NMEA_FS))) {
                 if (i == 1) data->utc = atol(token);
@@ -146,7 +122,7 @@ bool pasRead(NmeaData *data) {
             };
 
             if (i != PAS_GPGGA_LEN) return false;
-        } else if (strncmp(PAS_GPRMC, nmea[i], PAS_ID_LEN) == 0) {
+        } else if (strncmp(PAS_GPRMC, string, PAS_ID_LEN) == 0) {
             uint8_t i = 0;
             while ((token = strsep(&string, PAS_NMEA_FS))) {
                 if (i == 7) data->speed = strtof(token, NULL) * 100;
