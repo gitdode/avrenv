@@ -51,6 +51,9 @@
 /* Awake/busy interval in seconds */
 #define INTERVAL    8
 
+/* Battery low threshold */
+#define BAT_LOW_MV  3000
+
 /* Periodic interrupt timer interrupt count (seconds) */
 static volatile uint32_t pitints = 0;
 
@@ -227,25 +230,26 @@ static int16_t measureBat(void) {
  * @param power radio power in dBm
  * @param humidity relative humidity in %
  * @param pressure barometric pressure in hPa
- * @param data measurements from BME688
+ * @param bmedata measurements from BME688
+ * @param pasdata data from PA1616S
  */
 static void printMeas(uint8_t power,
                       uint8_t humidity,
                       uint16_t pressure,
-                      struct bme68x_data *data,
+                      struct bme68x_data *bmedata,
                       NmeaData *pasdata) {
-    div_t tdiv = div(data->temperature, 100);
+    div_t tdiv = div(bmedata->temperature, 100);
 
     // highly sophisticated IAQ algorithm
-    uint8_t aqi = 5 - min(4, data->gas_resistance / 15000);
+    uint8_t aqi = 5 - min(4, bmedata->gas_resistance / 15000);
 
     char buf[128];
     snprintf(buf, sizeof (buf),
             "%5lus, %u mV, %u dBm, %c%u.%u°C, %u%%, %u hPa, %lu Ohm (AQI: %u)\r\n",
             pitints, bavg, power,
-            data->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
+            bmedata->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
             humidity, pressure,
-            data->gas_resistance, aqi);
+            bmedata->gas_resistance, aqi);
     printString(buf);
 
     snprintf(buf, sizeof (buf),
@@ -327,7 +331,7 @@ int main(void) {
             if (bavg == 0) bavg = bat;
             bavg = (bavg + bat) >> 1;
 
-            if (bavg < 2100) {
+            if (bavg < BAT_LOW_MV) {
                 if (USART) printString("Battery low\r\n");
             } else {
                 if (ens) {
