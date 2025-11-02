@@ -373,7 +373,7 @@ int main(void) {
                 if (pas) {
                     NmeaData pas = {0};
                     bool pasread = pasRead(&pas);
-                    if (!pasread) {
+                    if (pasread) {
                         char buf[128];
                         snprintf(buf, sizeof (buf),
                                 "UTC: %06lu, Fix: %u, Sat: %u, Lat: %lu, Lon: %lu, Alt: %u m, Speed: %u knots\r\n",

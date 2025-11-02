@@ -10,6 +10,29 @@
 #include "pa1616s.h"
 
 /**
+ * Calculates the checksum by XORing the characters of the given string
+ * until the '*' character, compares it with the checksum included in the
+ * message and returns the result.
+ *
+ * @param msg message to be checked
+ * @return check result
+ */
+static bool checkSum(char *msg) {
+    char ckstr[3];
+    uint8_t cksum = 0;
+    for (; *msg != '\0'; msg++) {
+        if (*msg == '*') {
+            memcpy(ckstr, ++msg, sizeof (ckstr));
+            break;
+        } else {
+            cksum ^= *msg;
+        }
+    }
+
+    return xstrtoi(ckstr) == cksum;
+}
+
+/**
  * Writes the given command to the module.
  *
  * @param data command
@@ -99,7 +122,6 @@ bool pasInit(void) {
     return ack == 0;
 }
 
-// TODO check checksum
 bool pasRead(NmeaData *data) {
     char nmea[PAS_NMEA_CNT * PAS_NMEA_LEN];
     enable_rx();
@@ -108,10 +130,11 @@ bool pasRead(NmeaData *data) {
 
     for (uint8_t i = 0; i < cnt; i++) {
         char *token;
-        char *string = &nmea[i * PAS_NMEA_LEN];
-        if (strncmp(PAS_GPGGA, string, PAS_ID_LEN) == 0) {
+        char *msg = &nmea[i * PAS_NMEA_LEN];
+        bool valid = checkSum(msg);
+        if (strncmp(PAS_GPGGA, msg, PAS_ID_LEN) == 0) {
             uint8_t i = 0;
-            while ((token = strsep(&string, PAS_NMEA_FS))) {
+            while ((token = strsep(&msg, PAS_NMEA_FS))) {
                 if (i == 1) data->utc = atol(token);
                 if (i == 2) data->lat = strtof(token, NULL) * 10000;
                 if (i == 4) data->lon = strtof(token, NULL) * 10000;
@@ -121,17 +144,17 @@ bool pasRead(NmeaData *data) {
                 i++;
             };
 
-            if (i != PAS_GPGGA_LEN) return false;
-        } else if (strncmp(PAS_GPRMC, string, PAS_ID_LEN) == 0) {
+            if (i != PAS_GPGGA_LEN || !valid) return false;
+        } else if (strncmp(PAS_GPRMC, msg, PAS_ID_LEN) == 0) {
             uint8_t i = 0;
-            while ((token = strsep(&string, PAS_NMEA_FS))) {
+            while ((token = strsep(&msg, PAS_NMEA_FS))) {
                 if (i == 7) data->speed = strtof(token, NULL) * 100;
                 i++;
             };
 
-            if (i != PAS_GPRMC_LEN) return false;
+            if (i != PAS_GPRMC_LEN || !valid) return false;
         }
     }
 
-    return cnt != PAS_NMEA_CNT;
+    return cnt == PAS_NMEA_CNT;
 }

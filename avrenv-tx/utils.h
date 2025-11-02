@@ -8,6 +8,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdint.h>
+
 /**
  * Computes the length of the given array.
  */
@@ -46,6 +48,15 @@
     ((num - den / 2) / den) :     \
     ((num + den / 2) / den);      \
 })
+
+/**
+ * Converts given hex string to an int.
+ * https://stackoverflow.com/a/57112610/709426
+ *
+ * @param str hex string
+ * @return int value
+ */
+uint16_t xstrtoi(const char *str);
 
 #endif /* UTILS_H */
 

@@ -14,7 +14,7 @@ RFM = 69
 LORA = 0
 
 MAIN = avrenv.c
-SRC = rfm.c spi.c usart.c bme68x/bme68x.c bme688.c ens160.c pa1616s.c
+SRC = rfm.c spi.c usart.c utils.c bme68x/bme68x.c bme688.c ens160.c pa1616s.c
 
 CC = avr-gcc
 OBJCOPY = avr-objcopy

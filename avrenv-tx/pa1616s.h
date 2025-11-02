@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include "usart.h"
+#include "utils.h"
 
 #define PAS_NMEA_LEN    255
 #define PAS_NMEA_CNT    2
