@@ -48,10 +48,12 @@ static void writeCmd(const char *data) {
 }
 
 /**
- * Reads many lines of output from the module,
+ * Reads one or many lines of output from the module,
  * starting with the first occurrence of '$'.
  *
  * @param data lines of output
+ * @param num number of lines to be read
+ * @param len length of the given data array
  * @return number of lines read
  */
 // TODO timeout blocking function?
