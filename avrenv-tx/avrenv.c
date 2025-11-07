@@ -24,6 +24,7 @@
 #include "utils.h"
 #include "usart.h"
 #include "spi.h"
+#include "i2c.h"
 #if RFM == 69
     #include "librfm69/librfm69.h"
 #endif
@@ -33,6 +34,7 @@
 #include "bme688.h"
 #include "ens160.h"
 #include "pa1616s.h"
+#include "libsdc/libsdc.h"
 
 /* Timebase used for timing internal delays */
 #define TIMEBASE_VALUE  ((uint8_t) ceil(F_CPU * 0.000001))
@@ -44,7 +46,7 @@
     #define LORA    0
 #endif
 
-#define ENS160      0
+#define ENS160      1
 
 #define USART       1
 
@@ -81,11 +83,6 @@ ISR(PORTD_PORT_vect) {
         // RFM DIO4 (FSK)/DIO1 (LoRa)
         rfmIrq();
     }
-    if (PORTD_INTFLAGS & PORT_INT_6_bm) {
-        PORTD_INTFLAGS |= PORT_INT_6_bm;
-        // ENS new output data available
-        ensIrq();
-    }
 }
 
 /* Disables digital input buffer on all pins to save (a lot of) power */
@@ -97,6 +94,12 @@ static void initPins(void) {
     PORTC_PINCTRLUPD = 0xff;
     PORTD_PINCTRLUPD = 0xff;
     PORTF_PINCTRLUPD = 0xff;
+
+    // enable input on I2C SDA pin
+    // PORTA_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
+    // enable pull-up on I2C SDA and SCL pins
+    PORTA_PIN2CTRL |= PORT_PULLUPEN_bm;
+    PORTA_PIN3CTRL |= PORT_PULLUPEN_bm;
 
     // enable input on USART0 and USART1 RX pins
     PORTA_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
@@ -127,6 +130,11 @@ static void initPins(void) {
         PORTD_DIRSET = (1 << ENS_CS_PD5);
         PORTD_OUTSET = (1 << ENS_CS_PD5);
     }
+
+    // PD6 is SD card CS pin (output pin + pullup)
+    PORTD_DIRSET = (1 << SDC_CS_PD6);
+    // PORTD_OUTSET = (1 << SDC_CS_PD6);
+    PORTD_PIN6CTRL |= PORT_PULLUPEN_bm;
 }
 
 /* Sets CPU and peripherals clock speed */
@@ -175,6 +183,19 @@ static void initSPI(void) {
     SPI0_CTRLA |= SPI_MASTER_bm | SPI_ENABLE_bm;
 }
 
+/* Initializes the I2C */
+static void initI2C(void) {
+    // set host baud rate
+    TWI0_MBAUD = 94;
+    // enable TWI host
+    // TWI0_MCTRLA |= TWI_RIEN_bm | TWI_WIEN_bm | TWI_ENABLE_bm;
+    TWI0_MCTRLA |= TWI_SMEN_bm | TWI_ENABLE_bm;
+    // flush bus
+    // TWI0_MCTRLB |= TWI_FLUSH_bm;
+    // force bus to idle state
+    TWI0_MSTATUS |= TWI_BUSSTATE_IDLE_gc;
+}
+
 /* Initializes pin interrupts */
 static void initInts(void) {
     // PD2 sense rising edge (RFM DIO0)
@@ -218,7 +239,7 @@ static uint16_t convert(ADC_REFSEL_t ref, ADC_MUXPOS_t pin, uint8_t dur) {
  * @return battery voltage
  */
 static int16_t measureBat(void) {
-    uint32_t adc = convert(ADC_REFSEL_2V048_gc, ADC_MUXPOS_AIN22_gc, 255);
+    uint32_t adc = convert(ADC_REFSEL_2V048_gc, ADC_MUXPOS_AIN30_gc, 255);
     uint16_t mv = (adc * 2048 * 2) >> 12;
 
     return mv;
@@ -268,6 +289,7 @@ int main(void) {
     initADC();
     initUSART();
     initSPI();
+    initI2C();
     initInts();
 
     if (USART) {
@@ -304,14 +326,19 @@ int main(void) {
 
     bool ens = false;
     if (ENS160) {
-        static SpiCs ensSpiCs = {.port = &PORTD_OUT, .pin = ENS_CS_PD5};
-        ens = ensInit(&ensSpiCs);
+        // static SpiCs ensSpiCs = {.port = &PORTD_OUT, .pin = ENS_CS_PD5};
+        ens = ensInit(ENS_I2C_ADDR_LOW);
         if (USART && !ens) {
             printString("ENS160 init failed!\r\n");
         }
     }
 
-    bool pas = pasInit();
+    bool sdc = sdcInit();
+    if (USART && !sdc) {
+        printString("SD card init failed!\r\n");
+    }
+
+    bool pas = true; //pasInit();
     if (USART && !pas) {
         printString("PA1616S init failed!\r\n");
     }
@@ -336,7 +363,7 @@ int main(void) {
             } else {
                 if (ens) {
                     static EnsData ensdata = {0};
-                    bool ensmeas = ensMeasure(&ensdata);
+                    bool ensmeas = ensMeasure(ENS_I2C_ADDR_LOW, &ensdata);
                     if (USART && ensmeas) {
                         char buf[48];
                         snprintf(buf, sizeof (buf), "AQI: %u, TVOC: %5u ppb, eCO2: %5u ppm\r\n",

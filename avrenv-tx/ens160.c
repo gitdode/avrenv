@@ -5,80 +5,80 @@
  * Created on 22.10.2025, 21:47
  */
 
+#include <util/delay.h>
+
 #include "ens160.h"
+#include "usart.h"
 
-/* SPI CS port and pin */
-static SpiCs _spics;
-
-/**
- * Writes given register and data.
- *
- * @param reg register to write to
- * @param data to write to register
- */
-static void spiWrite(const uint8_t reg,
-                     const uint8_t data) {
-    *_spics.port &= ~(1u << _spics.pin);
-    transmit((reg << 1) & ~0x01);
-    transmit(data);
-    *_spics.port |= (1u << _spics.pin);
+static void regWrite(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len) {
+    i2cStartWrite(addr);
+    i2cWrite(reg);
+    for (uint8_t i = 0; i < len; i++) {
+        i2cWrite(data[i]);
+    }
 }
 
-/**
- * Reads from register(s) into given data array starting with
- * given register auto-incrementing.
- *
- * @param reg start register
- * @param data array with data to be read from consecutive registers
- * @param len number of registers to read from
- */
-static void spiRead(const uint8_t reg,
-                    uint8_t *data,
-                    const uint8_t len) {
-    *_spics.port &= ~(1u << _spics.pin);
-    transmit((reg << 1) | 0x01);
-    for (uint8_t i = 0; i < len; i++) {
-        data[i] = transmit(0x00);
+static void regRead(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len) {
+    i2cStartWrite(addr);
+    i2cWrite(reg);
+    i2cStartRead(addr);
+    for (uint8_t i = 0; i < len - 1; i++) {
+        data[i] = i2cReadAck();
     }
-    *_spics.port |= (1u << _spics.pin);
+    data[len - 1] = i2cReadNack();
+    _delay_ms(1);
 }
 
 void ensIrq(void) {
     // new data is available
 }
 
-bool ensInit(SpiCs *spics) {
-    _spics = *spics;
+bool ensInit(uint8_t addr) {
     uint8_t data[8];
 
+    _delay_ms(10);
+
     // read and check part id
-    spiRead(ENS_PART_ID, data, 2);
-    uint16_t partId = data[1] << 8;
-    partId |= data[0];
+    regRead(addr, ENS_PART_ID, data, 2);
+    uint16_t partId = data[0];
+    partId |= data[1] << 8;
     if (partId != 0x0160) {
+        i2cStop();
+
         return false;
     }
 
     // enable interrupt when new output data is available in the DATA registers
-    // spiWrite(ENS_CONFIG, 0x23);
+    // data[0] = 0x23;
+    // regWrite(addr, ENS_CONFIG, data, 1);
 
     // go to standard mode
-    spiWrite(ENS_OPMODE, ENS_MODE_STANDARD);
+    data[0] = ENS_MODE_STANDARD;
+    regWrite(addr, ENS_OPMODE, data, 1);
 
     // check for error
-    spiRead(ENS_DEVICE_STATUS, data, 1);
+    regRead(addr, ENS_DEVICE_STATUS, data, 1);
+    printByte(data[0]);
     if (data[0] & ENS_STATUS_STATER_bm) {
+        i2cStop();
+
         return false;
     }
+
+    i2cStop();
 
     return true;
 }
 
-bool ensMeasure(EnsData *ensdata) {
+bool ensMeasure(uint8_t addr, EnsData *ensdata) {
     uint8_t data[8];
 
-    spiRead(ENS_DEVICE_STATUS, data, 1);
+    printString("ens\r\n");
+
+    regRead(addr, ENS_DEVICE_STATUS, data, 1);
     ensdata->status = data[0];
+
+    printByte(ensdata->status);
 
     // expecting STATAS, NEWDAT and NEWGPR to be set, Initial Start-Up phase
     // is also okay
@@ -86,16 +86,18 @@ bool ensMeasure(EnsData *ensdata) {
         return false;
     }
 
-    spiRead(ENS_DATA_AQI, data, 1);
+    regRead(addr, ENS_DATA_AQI, data, 1);
     ensdata->aqi = data[0];
 
-    spiRead(ENS_DATA_TVOC, data, 2);
+    regRead(addr, ENS_DATA_TVOC, data, 2);
     ensdata->tvoc = data[1] << 8;
     ensdata->tvoc |= data[0];
 
-    spiRead(ENS_DATA_ECO2, data, 2);
+    regRead(addr, ENS_DATA_ECO2, data, 2);
     ensdata->eco2 = data[1] << 8;
     ensdata->eco2 |= data[0];
+
+    i2cStop();
 
     return true;
 }

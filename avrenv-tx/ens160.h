@@ -13,6 +13,11 @@
 
 #include "pins.h"
 #include "spi.h"
+#include "i2c.h"
+
+/* I2C */
+#define ENS_I2C_ADDR_LOW        0x52 << 1
+#define ENS_I2C_ADDR_HIGH       0x53 << 1
 
 /* Registers */
 #define ENS_PART_ID             0x00 // 2-byte
@@ -79,17 +84,18 @@ void ensIrq(void);
 /**
  * Initializes the ENS160 sensor.
  * 
- * @param spics port and pin for SPI chip select
+ * @param I2C address
  * @return success
  */
-bool ensInit(SpiCs *spics);
+bool ensInit(const uint8_t addr);
 
 /**
  * Performs a measurement.
  * 
+ * @param addr I2C address
  * @param data measurement data read from sensor
  * @return success
  */
-bool ensMeasure(EnsData *data);
+bool ensMeasure(const uint8_t addr, EnsData *data);
 
 #endif /* ENS_H */

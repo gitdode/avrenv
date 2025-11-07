@@ -14,7 +14,8 @@ RFM = 69
 LORA = 0
 
 MAIN = avrenv.c
-SRC = rfm.c spi.c usart.c utils.c bme68x/bme68x.c bme688.c ens160.c pa1616s.c
+SRC = rfm.c sdc.c spi.c i2c.c usart.c utils.c bme68x/bme68x.c \
+	bme688.c ens160.c pa1616s.c
 
 CC = avr-gcc
 OBJCOPY = avr-objcopy
@@ -38,11 +39,12 @@ CFLAGS += -std=gnu99
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c
 SRC += ../../librfm$(RFM)/librfm$(RFM).a
+SRC += ../../libsdc/libsdc.a
 
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)
 	
-$(TARGET).elf: spi.h usart.h utils.h bme68x/bme68x.h bme68x/bme68x_defs.h \
+$(TARGET).elf: spi.h i2c.h usart.h utils.h bme68x/bme68x.h bme68x/bme68x_defs.h \
 	bme688.h ens160.h pa1616s.h Makefile
 
 all: $(TARGET).hex

@@ -12,10 +12,13 @@
       <in>bme688.h</in>
       <in>ens160.c</in>
       <in>ens160.h</in>
+      <in>i2c.c</in>
+      <in>i2c.h</in>
       <in>pa1616s.c</in>
       <in>pa1616s.h</in>
       <in>pins.h</in>
       <in>rfm.c</in>
+      <in>sdc.c</in>
       <in>spi.c</in>
       <in>spi.h</in>
       <in>usart.c</in>
@@ -131,7 +134,11 @@
             tool="0"
             flavor2="0">
       </item>
-      <item path="utils.c" ex="false" tool="0" flavor2="0">
+      <item path="i2c.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="i2c.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sdc.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
   </confs>
