@@ -2,6 +2,8 @@
  * File:   i2c.c
  * Author: torsten.roemer@luniks.net
  *
+ * Very basic I²C implementation.
+ *
  * Created on 06.11.2025, 17:3
  */
 
@@ -40,4 +42,22 @@ uint8_t i2cReadNack(void) {
     // TWI0_MCTRLB |= TWI_MCMD_RECVTRANS_gc;
 
     return TWI0_MDATA;
+}
+
+void i2cRegWrite(uint8_t addr, uint8_t reg, uint8_t data) {
+    i2cStartWrite(addr);
+    i2cWrite(reg);
+    i2cWrite(data);
+    i2cStop();
+}
+
+void i2cRegRead(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len) {
+    i2cStartWrite(addr);
+    i2cWrite(reg);
+    i2cStartRead(addr);
+    for (uint8_t i = 0; i < len - 1; i++) {
+        data[i] = i2cReadAck();
+    }
+    data[len - 1] = i2cReadNack();
+    i2cStop();
 }

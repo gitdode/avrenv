@@ -12,22 +12,20 @@
 
 #include "pins.h"
 
-#define wait_idle() do {} while ((TWI0_MSTATUS & TWI_BUSSTATE_gm) != TWI_BUSSTATE_IDLE_gc)
-
 /**
- * Begins a transaction by sending the address with write bit,
- * waiting for write interrupt flag.
+ * Begins a write transaction by sending the address (bit 7-1) 
+ * with write bit, waiting for write interrupt flag.
  */
 void i2cStartWrite(uint8_t addr);
 
 /**
- * Begins a transaction by sending the address with read bit,
- * waiting for received acknowledgement.
+ * Begins a read transaction by sending the address (bit 7-1) 
+ * with read bit, waiting for received acknowledgement.
  */
 void i2cStartRead(uint8_t addr);
 
 /**
- * Ends a message.
+ * Ends the transaction.
  */
 void i2cStop(void);
 
@@ -51,6 +49,27 @@ uint8_t i2cReadAck(void);
  * @return 
  */
 uint8_t i2cReadNack(void);
+
+/**
+ * Writes given byte to the given register to the client
+ * with the given address (bit 7-1).
+ * 
+ * @param addr client address, bit 7-1
+ * @param reg register to write data to
+ * @param data data to write
+ */
+void i2cRegWrite(uint8_t addr, uint8_t reg, uint8_t data);
+
+/**
+ * Reads data (starting from) the given register from the client
+ * with the given address (bit 7-1).
+ * 
+ * @param addr client address, bit 7-1
+ * @param reg register to read data from
+ * @param data read data
+ * @param len length of data
+ */
+void i2cRegRead(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len);
 
 #endif /* I2C_H */
 

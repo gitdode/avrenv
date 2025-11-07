@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <util/delay.h>
 
 #include "pins.h"
 #include "spi.h"
@@ -67,6 +68,12 @@
 #define ENS_STATUS_VALIDITY_gm  0x0c
 #define ENS_STATUS_NEWDAT_bm    0x02
 #define ENS_STATUS_NEWGPR_bm    0x01
+
+/* Status validity */
+#define ENS_VALIDITY_NORMAL     0 << 2
+#define ENS_VALIDITY_WARMUP     1 << 2
+#define ENS_VALIDITY_INITIAL    2 << 2
+#define ENS_VALIDITY_INVALID    3 << 2
 
 /* Data read from sensor */
 typedef struct {

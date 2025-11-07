@@ -95,11 +95,9 @@ static void initPins(void) {
     PORTD_PINCTRLUPD = 0xff;
     PORTF_PINCTRLUPD = 0xff;
 
-    // enable input on I2C SDA pin
-    // PORTA_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
     // enable pull-up on I2C SDA and SCL pins
-    PORTA_PIN2CTRL |= PORT_PULLUPEN_bm;
-    PORTA_PIN3CTRL |= PORT_PULLUPEN_bm;
+    // PORTA_PIN2CTRL |= PORT_PULLUPEN_bm;
+    // PORTA_PIN3CTRL |= PORT_PULLUPEN_bm;
 
     // enable input on USART0 and USART1 RX pins
     PORTA_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
@@ -186,12 +184,9 @@ static void initSPI(void) {
 /* Initializes the I2C */
 static void initI2C(void) {
     // set host baud rate
-    TWI0_MBAUD = 94;
-    // enable TWI host
-    // TWI0_MCTRLA |= TWI_RIEN_bm | TWI_WIEN_bm | TWI_ENABLE_bm;
+    TWI0_MBAUD = 94; // 50 kHz
+    // enable TWI host with smart mode enabled
     TWI0_MCTRLA |= TWI_SMEN_bm | TWI_ENABLE_bm;
-    // flush bus
-    // TWI0_MCTRLB |= TWI_FLUSH_bm;
     // force bus to idle state
     TWI0_MSTATUS |= TWI_BUSSTATE_IDLE_gc;
 }
@@ -326,7 +321,6 @@ int main(void) {
 
     bool ens = false;
     if (ENS160) {
-        // static SpiCs ensSpiCs = {.port = &PORTD_OUT, .pin = ENS_CS_PD5};
         ens = ensInit(ENS_I2C_ADDR_LOW);
         if (USART && !ens) {
             printString("ENS160 init failed!\r\n");
@@ -338,7 +332,7 @@ int main(void) {
         printString("SD card init failed!\r\n");
     }
 
-    bool pas = true; //pasInit();
+    bool pas = pasInit();
     if (USART && !pas) {
         printString("PA1616S init failed!\r\n");
     }
