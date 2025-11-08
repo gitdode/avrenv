@@ -62,6 +62,9 @@ static volatile uint32_t pitints = 0;
 /** Averaged battery voltage in millivolts */
 static uint16_t bavg;
 
+/* SD card memory address */
+static uint32_t sdaddr;
+
 /* Periodic interrupt timer interrupt */
 ISR(RTC_PIT_vect) {
     // clear flag or interrupt remains active
@@ -276,6 +279,38 @@ static void printMeas(uint8_t power,
     printString(buf);
 }
 
+/**
+ * Writes given measurements to SD card.
+ *
+ * @param power radio power in dBm
+ * @param humidity relative humidity in %
+ * @param pressure barometric pressure in hPa
+ * @param bmedata measurements from BME688
+ * @param pasdata data from PA1616S
+ * @return success
+ */
+static bool writeMeas(uint8_t power,
+                      uint8_t humidity,
+                      uint16_t pressure,
+                      struct bme68x_data *bmedata,
+                      NmeaData *pasdata) {
+    div_t tdiv = div(bmedata->temperature, 100);
+
+    char buf[SD_BLOCK_SIZE];
+    memset(buf, 0, SD_BLOCK_SIZE);
+    snprintf(buf, sizeof (buf),
+            "%lu, %u, %u, %c%u.%u, %u, %u, %lu, %06lu, %u, %u, %lu, %lu, %lu, %u\n",
+            pitints, bavg, power,
+            bmedata->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
+            humidity, pressure,
+            bmedata->gas_resistance,
+            pasdata->utc, pasdata->fix, pasdata->sat,
+            pasdata->lat, pasdata->lon,
+            pasdata->alt / 10, pasdata->speed / 100);
+
+    return sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
+}
+
 int main(void) {
 
     initPins();
@@ -415,6 +450,12 @@ int main(void) {
                         rfmTransmitPayload(payload, sizeof (payload), 0x24);
                         rfmSleep();
 
+                        if (sdc) {
+                            bool sdcwrite = writeMeas(power, humidity, pressure, &bmedata, &pasdata);
+                            if (USART && !sdcwrite) {
+                                printString("Writing to SD card failed!\r\n");
+                            }
+                        }
                         if (USART) {
                             printMeas(power, humidity, pressure, &bmedata, &pasdata);
                         }
