@@ -16,7 +16,22 @@
 
 #include "pins.h"
 #include "spi.h"
+#include "i2c.h"
 #include "bme68x/bme68x.h"
+
+/* Use SPI or I2C interface */
+#define BME_INTF                BME68X_I2C_INTF
+
+/* I2C */
+#define BME_I2C_ADDR_LOW        BME68X_I2C_ADDR_LOW << 1
+#define BME_I2C_ADDR_HIGH       BME68X_I2C_ADDR_HIGH << 1
+
+/* Port and pin for SPI chip select or I2C address */
+typedef struct {
+    volatile uint8_t *port;
+    uint8_t pin;
+    uint8_t addr;
+} BmeIntf;
 
 /**
  * Initializes the BME68x sensor.
@@ -24,13 +39,13 @@
  * @param temp heater temperature
  * @param dur heater duration in milliseconds
  * @param amb ambient temperature
- * @param intf port and pin for SPI chip select
+ * @param intf port and pin for SPI chip select or I2C address (bit 7-1)
  * @return error code
  */
 int8_t bmeInit(uint16_t temp,
                uint16_t dur,
                uint8_t amb,
-               SpiCs *intf);
+               BmeIntf *intf);
 
 /**
  * Sets heater temperature and duration in milliseconds.

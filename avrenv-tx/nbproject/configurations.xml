@@ -99,6 +99,16 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="/home/dode/dev/avrenv/avrenv-tx/i2c.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/avrenv-tx/i2c.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="/home/dode/dev/avrenv/avrenv-tx/pa1616s.c"
             ex="false"
             tool="0"
@@ -119,6 +129,11 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="/home/dode/dev/avrenv/avrenv-tx/sdc.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="/home/dode/dev/avrenv/avrenv-tx/spi.c"
             ex="false"
             tool="0"
@@ -133,12 +148,6 @@
             ex="false"
             tool="0"
             flavor2="0">
-      </item>
-      <item path="i2c.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="i2c.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="sdc.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
   </confs>

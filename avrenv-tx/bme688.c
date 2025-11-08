@@ -20,20 +20,29 @@ static struct bme68x_heatr_conf heater_conf;
  * @param data array with data of first register - data pair as first element,
  *   with remaining register - data pairs following
  * @param len (number of register - data pairs) - 1
- * @param intfPtr port and pin for SPI chip select
+ * @param intfPtr port and pin for SPI chip select or I2C address
  * @return success
  */
 static BME68X_INTF_RET_TYPE bmeWrite(uint8_t reg,
                                      const uint8_t *data,
                                      uint32_t len,
                                      void *intfPtr) {
-    const SpiCs intf = *((SpiCs *)intfPtr);
-    *intf.port &= ~(1u << intf.pin);
-    transmit(reg);
-    for (uint32_t i = 0; i < len; i++) {
-        transmit(data[i]);
+    const BmeIntf intf = *((BmeIntf *)intfPtr);
+    if (BME_INTF == BME68X_SPI_INTF) {
+        *intf.port &= ~(1u << intf.pin);
+        transmit(reg);
+        for (uint32_t i = 0; i < len; i++) {
+            transmit(data[i]);
+        }
+        *intf.port |= (1u << intf.pin);
+    } else {
+        i2cStartWrite(intf.addr);
+        i2cWrite(reg);
+        for (uint32_t i = 0; i < len; i++) {
+            i2cWrite(data[i]);
+        }
+        i2cStop();
     }
-    *intf.port |= (1u << intf.pin);
 
     return BME68X_INTF_RET_SUCCESS;
 }
@@ -45,20 +54,31 @@ static BME68X_INTF_RET_TYPE bmeWrite(uint8_t reg,
  * @param reg start register
  * @param data array with data to be read from consecutive registers
  * @param len number of registers to read from
- * @param intfPtr port and pin for SPI chip select
+ * @param intfPtr port and pin for SPI chip select or I2C address
  * @return success
  */
 static BME68X_INTF_RET_TYPE bmeRead(uint8_t reg,
                                     uint8_t *data,
                                     uint32_t len,
                                     void *intfPtr) {
-    const SpiCs intf = *((SpiCs *)intfPtr);
-    *intf.port &= ~(1u << intf.pin);
-    transmit(reg);
-    for (uint32_t i = 0; i < len; i++) {
-        data[i] = transmit(0x00);
+    const BmeIntf intf = *((BmeIntf *)intfPtr);
+    if (BME_INTF == BME68X_SPI_INTF) {
+        *intf.port &= ~(1u << intf.pin);
+        transmit(reg);
+        for (uint32_t i = 0; i < len; i++) {
+            data[i] = transmit(0x00);
+        }
+        *intf.port |= (1u << intf.pin);
+    } else {
+        i2cStartWrite(intf.addr);
+        i2cWrite(reg);
+        i2cStartRead(intf.addr);
+        for (uint32_t i = 0; i < len - 1; i++) {
+            data[i] = i2cReadAck();
+        }
+        data[len - 1] = i2cReadNack();
+        i2cStop();
     }
-    *intf.port |= (1u << intf.pin);
 
     return BME68X_INTF_RET_SUCCESS;
 }
@@ -78,12 +98,12 @@ static void bmeDelayUs(uint32_t period,
 int8_t bmeInit(uint16_t temp,
                uint16_t dur,
                uint8_t amb,
-               SpiCs *intf) {
+               BmeIntf *intf) {
     _delay_ms(2);
 
     int8_t result;
 
-    dev.intf = BME68X_SPI_INTF;
+    dev.intf = BME_INTF;
     dev.write = bmeWrite;
     dev.read = bmeRead;
     dev.delay_us = bmeDelayUs;

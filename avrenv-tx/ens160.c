@@ -24,8 +24,8 @@ bool ensInit(uint8_t addr) {
         return false;
     }
 
-    // enable interrupt when new output data is available in the DATA i2cRegisters
-    i2cRegWrite(addr, ENS_CONFIG, 0x23);
+    // enable interrupt when new output data is available in the DATA registers
+    // i2cRegWrite(addr, ENS_CONFIG, 0x23);
 
     // go to standard mode
     i2cRegWrite(addr, ENS_OPMODE, ENS_MODE_STANDARD);

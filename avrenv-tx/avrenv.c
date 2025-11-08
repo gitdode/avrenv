@@ -46,7 +46,7 @@
     #define LORA    0
 #endif
 
-#define ENS160      1
+#define ENS160      0
 
 #define USART       1
 
@@ -312,8 +312,9 @@ int main(void) {
         printString("Radio init failed!\r\n");
     }
 
-    static SpiCs bmeSpiCs = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
-    int8_t bme = bmeInit(300, 100, 20, &bmeSpiCs);
+    static BmeIntf bmeIntf = {.port = &PORTD_OUT, .pin = BME_CS_PD4,
+                              .addr = BME_I2C_ADDR_LOW};
+    int8_t bme = bmeInit(300, 100, 20, &bmeIntf);
     if (USART && bme != 0) {
         printString("BME688 init failed!\r\n");
         printInt(bme);
