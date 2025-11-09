@@ -294,19 +294,17 @@ static bool writeMeas(uint8_t power,
                       uint16_t pressure,
                       struct bme68x_data *bmedata,
                       NmeaData *pasdata) {
-    div_t tdiv = div(bmedata->temperature, 100);
-
     char buf[SD_BLOCK_SIZE];
     memset(buf, 0, SD_BLOCK_SIZE);
     snprintf(buf, sizeof (buf),
-            "%lu, %u, %u, %c%u.%u, %u, %u, %lu, %06lu, %u, %u, %lu, %lu, %lu, %u\n",
+            "%lu,%u,%u,%u,%u,%u,%lu,%06lu,%u,%u,%lu,%lu,%lu,%u\n",
             pitints, bavg, power,
-            bmedata->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
+            bmedata->temperature,
             humidity, pressure,
             bmedata->gas_resistance,
             pasdata->utc, pasdata->fix, pasdata->sat,
             pasdata->lat, pasdata->lon,
-            pasdata->alt / 10, pasdata->speed / 100);
+            pasdata->alt, pasdata->speed);
 
     return sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
 }
