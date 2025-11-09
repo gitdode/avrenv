@@ -24,6 +24,7 @@
 #include "utils.h"
 #include "usart.h"
 #include "spi.h"
+#include "i2c.h"
 #if RFM == 69
     #include "librfm69/librfm69.h"
 #endif
@@ -33,6 +34,7 @@
 #include "bme688.h"
 #include "ens160.h"
 #include "pa1616s.h"
+#include "libsdc/libsdc.h"
 
 /* Timebase used for timing internal delays */
 #define TIMEBASE_VALUE  ((uint8_t) ceil(F_CPU * 0.000001))
@@ -60,6 +62,9 @@ static volatile uint32_t pitints = 0;
 /** Averaged battery voltage in millivolts */
 static uint16_t bavg;
 
+/* SD card memory address */
+static uint32_t sdaddr;
+
 /* Periodic interrupt timer interrupt */
 ISR(RTC_PIT_vect) {
     // clear flag or interrupt remains active
@@ -81,11 +86,6 @@ ISR(PORTD_PORT_vect) {
         // RFM DIO4 (FSK)/DIO1 (LoRa)
         rfmIrq();
     }
-    if (PORTD_INTFLAGS & PORT_INT_6_bm) {
-        PORTD_INTFLAGS |= PORT_INT_6_bm;
-        // ENS new output data available
-        ensIrq();
-    }
 }
 
 /* Disables digital input buffer on all pins to save (a lot of) power */
@@ -97,6 +97,10 @@ static void initPins(void) {
     PORTC_PINCTRLUPD = 0xff;
     PORTD_PINCTRLUPD = 0xff;
     PORTF_PINCTRLUPD = 0xff;
+
+    // enable pull-up on I2C SDA and SCL pins
+    // PORTA_PIN2CTRL |= PORT_PULLUPEN_bm;
+    // PORTA_PIN3CTRL |= PORT_PULLUPEN_bm;
 
     // enable input on USART0 and USART1 RX pins
     PORTA_PIN1CTRL = PORT_ISC_INTDISABLE_gc;
@@ -127,6 +131,11 @@ static void initPins(void) {
         PORTD_DIRSET = (1 << ENS_CS_PD5);
         PORTD_OUTSET = (1 << ENS_CS_PD5);
     }
+
+    // PD6 is SD card CS pin (output pin + pullup)
+    PORTD_DIRSET = (1 << SDC_CS_PD6);
+    // PORTD_OUTSET = (1 << SDC_CS_PD6);
+    PORTD_PIN6CTRL |= PORT_PULLUPEN_bm;
 }
 
 /* Sets CPU and peripherals clock speed */
@@ -175,6 +184,16 @@ static void initSPI(void) {
     SPI0_CTRLA |= SPI_MASTER_bm | SPI_ENABLE_bm;
 }
 
+/* Initializes the I2C */
+static void initI2C(void) {
+    // set host baud rate
+    TWI0_MBAUD = 94; // 50 kHz
+    // enable TWI host with smart mode enabled
+    TWI0_MCTRLA |= TWI_SMEN_bm | TWI_ENABLE_bm;
+    // force bus to idle state
+    TWI0_MSTATUS |= TWI_BUSSTATE_IDLE_gc;
+}
+
 /* Initializes pin interrupts */
 static void initInts(void) {
     // PD2 sense rising edge (RFM DIO0)
@@ -218,7 +237,7 @@ static uint16_t convert(ADC_REFSEL_t ref, ADC_MUXPOS_t pin, uint8_t dur) {
  * @return battery voltage
  */
 static int16_t measureBat(void) {
-    uint32_t adc = convert(ADC_REFSEL_2V048_gc, ADC_MUXPOS_AIN22_gc, 255);
+    uint32_t adc = convert(ADC_REFSEL_2V048_gc, ADC_MUXPOS_AIN30_gc, 255);
     uint16_t mv = (adc * 2048 * 2) >> 12;
 
     return mv;
@@ -260,6 +279,38 @@ static void printMeas(uint8_t power,
     printString(buf);
 }
 
+/**
+ * Writes given measurements to SD card.
+ *
+ * @param power radio power in dBm
+ * @param humidity relative humidity in %
+ * @param pressure barometric pressure in hPa
+ * @param bmedata measurements from BME688
+ * @param pasdata data from PA1616S
+ * @return success
+ */
+static bool writeMeas(uint8_t power,
+                      uint8_t humidity,
+                      uint16_t pressure,
+                      struct bme68x_data *bmedata,
+                      NmeaData *pasdata) {
+    div_t tdiv = div(bmedata->temperature, 100);
+
+    char buf[SD_BLOCK_SIZE];
+    memset(buf, 0, SD_BLOCK_SIZE);
+    snprintf(buf, sizeof (buf),
+            "%lu, %u, %u, %c%u.%u, %u, %u, %lu, %06lu, %u, %u, %lu, %lu, %lu, %u\n",
+            pitints, bavg, power,
+            bmedata->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
+            humidity, pressure,
+            bmedata->gas_resistance,
+            pasdata->utc, pasdata->fix, pasdata->sat,
+            pasdata->lat, pasdata->lon,
+            pasdata->alt / 10, pasdata->speed / 100);
+
+    return sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
+}
+
 int main(void) {
 
     initPins();
@@ -268,6 +319,7 @@ int main(void) {
     initADC();
     initUSART();
     initSPI();
+    initI2C();
     initInts();
 
     if (USART) {
@@ -295,8 +347,9 @@ int main(void) {
         printString("Radio init failed!\r\n");
     }
 
-    static SpiCs bmeSpiCs = {.port = &PORTD_OUT, .pin = BME_CS_PD4};
-    int8_t bme = bmeInit(300, 100, 20, &bmeSpiCs);
+    static BmeIntf bmeIntf = {.port = &PORTD_OUT, .pin = BME_CS_PD4,
+                              .addr = BME_I2C_ADDR_LOW};
+    int8_t bme = bmeInit(300, 100, 20, &bmeIntf);
     if (USART && bme != 0) {
         printString("BME688 init failed!\r\n");
         printInt(bme);
@@ -304,11 +357,15 @@ int main(void) {
 
     bool ens = false;
     if (ENS160) {
-        static SpiCs ensSpiCs = {.port = &PORTD_OUT, .pin = ENS_CS_PD5};
-        ens = ensInit(&ensSpiCs);
+        ens = ensInit(ENS_I2C_ADDR_LOW);
         if (USART && !ens) {
             printString("ENS160 init failed!\r\n");
         }
+    }
+
+    bool sdc = sdcInit();
+    if (USART && !sdc) {
+        printString("SD card init failed!\r\n");
     }
 
     bool pas = pasInit();
@@ -336,7 +393,7 @@ int main(void) {
             } else {
                 if (ens) {
                     static EnsData ensdata = {0};
-                    bool ensmeas = ensMeasure(&ensdata);
+                    bool ensmeas = ensMeasure(ENS_I2C_ADDR_LOW, &ensdata);
                     if (USART && ensmeas) {
                         char buf[48];
                         snprintf(buf, sizeof (buf), "AQI: %u, TVOC: %5u ppb, eCO2: %5u ppm\r\n",
@@ -393,6 +450,12 @@ int main(void) {
                         rfmTransmitPayload(payload, sizeof (payload), 0x24);
                         rfmSleep();
 
+                        if (sdc) {
+                            bool sdcwrite = writeMeas(power, humidity, pressure, &bmedata, &pasdata);
+                            if (USART && !sdcwrite) {
+                                printString("Writing to SD card failed!\r\n");
+                            }
+                        }
                         if (USART) {
                             printMeas(power, humidity, pressure, &bmedata, &pasdata);
                         }
