@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <time.h>
 #include <string.h>
+#include <errno.h>
+#include <error.h>
 
 #define BLOCKSIZE   512
 
@@ -34,19 +36,17 @@ typedef struct {
     uint16_t speed;
 } SatData;
 
-/*
- * Converts a raw file written by avrenv transmitter to a GPX file.
+/**
+ * Reads blocks of 512 bytes from 'envf', being a raw image of an SD card of
+ * n blocks length, while each block is expected to be a a null-terminated
+ * string of comma-separated fields. The fields are converted and used to write
+ * basic <trkpt> elements to the GPX file.
+ * The WGS84 coordinates are converted from degrees minutes to decimal degrees.
+ *
+ * @param envf input file stream
+ * @param gpxf output file stream
  */
-int main(int argc, char** argv) {
-    if (argc != 3) {
-        printf("Usage: %s <avrenv raw file> <gpx file>", argv[0]);
-
-        return EXIT_SUCCESS;
-    }
-
-    FILE *envf = fopen(argv[1], "r");
-    FILE *gpxf = fopen(argv[2], "w+");
-
+static void convert(FILE *envf, FILE *gpxf) {
     fputs("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n", gpxf);
     fputs("<gpx version=\"1.1\" creator=\"avrenv\">\n", gpxf);
     fputs("  <trk>\n", gpxf);
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
         uint8_t i = 0;
         char *token;
         char *str = line;
-        while ((token = strsep(&str, ","))) {
+        while ((token = strsep(&str, ",\n"))) {
             switch (i) {
                 case 7: data.utc = token;
                     break;
@@ -103,11 +103,47 @@ int main(int argc, char** argv) {
     fputs("    </trkseg>\n", gpxf);
     fputs("  </trk>\n", gpxf);
     fputs("</gpx>\n", gpxf);
+}
 
-    fclose(envf);
-    fflush(gpxf);
-    fclose(gpxf);
+/*
+ * Converts a raw file written by avrenv transmitter to a GPX file.
+ */
+int main(int argc, char **argv) {
+    if (argc != 3) {
+        printf("Usage: %s <avrenv raw file> <gpx file>", argv[0]);
 
-    return (EXIT_SUCCESS);
+        return EXIT_SUCCESS;
+    }
+
+    const char *envfile = argv[1];
+    const char *gpxfile = argv[2];
+
+    FILE *envf = fopen(envfile, "r");
+    if (envf == NULL) {
+        error(EXIT_FAILURE, errno,
+              "Error: input file '%s' could not be opened for reading",
+              envfile);
+    }
+    FILE *gpxf = fopen(gpxfile, "w+");
+    if (gpxf == NULL) {
+        error(EXIT_FAILURE, errno,
+              "Error: output file '%s' could not be opened for writing",
+              gpxfile);
+    }
+
+    convert(envf, gpxf);
+
+    if (fclose(envf) != 0) {
+        error(EXIT_FAILURE, errno,
+              "Error: input file '%s' could not be closed",
+              envfile);
+    }
+    if (fflush(gpxf) != 0 || fclose(gpxf) != 0) {
+        error(EXIT_FAILURE, errno,
+              "Error: output file '%s' could not be closed",
+              gpxfile);
+    }
+
+    return EXIT_SUCCESS;
 }
 
