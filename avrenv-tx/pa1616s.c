@@ -49,14 +49,14 @@ static void writeCmd(const char *data) {
 
 /**
  * Reads one or many lines of output from the module,
- * starting with the first occurrence of '$'.
+ * starting with the first occurrence of '$'. 
+ * TODO timeout blocking function?
  *
  * @param data lines of output
  * @param num number of lines to be read
  * @param len length of the given data array
  * @return number of lines read
  */
-// TODO timeout blocking function?
 static uint8_t readOut(char *data, uint8_t num, uint16_t len) {
     uint8_t cnt = 0;
     for (; cnt < num; cnt++) {
@@ -134,33 +134,43 @@ bool pasRead(NmeaData *data) {
         char *token;
         char *msg = &nmea[i * PAS_NMEA_LEN];
         bool valid = checkSum(msg);
+        if (!valid) {
+            return false;
+        }
         if (strncmp(PAS_GPGGA, msg, PAS_ID_LEN) == 0) {
             uint8_t i = 0;
             while ((token = strsep(&msg, PAS_NMEA_FS))) {
                 switch (i) {
-                    case 1: data->utc = atol(token); break;
-                    case 2: data->lat = strtof(token, NULL) * 10000; break;
-                    case 4: data->lon = strtof(token, NULL) * 10000; break;
-                    case 6: data->fix = atol(token); break;
-                    case 7: data->sat = atol(token); break;
-                    case 9: data->alt = strtof(token, NULL) * 10; break;
+                    case 1: data->utc = atol(token);
+                        break;
+                    case 2: data->lat = strtof(token, NULL) * 10000;
+                        break;
+                    case 4: data->lon = strtof(token, NULL) * 10000;
+                        break;
+                    case 6: data->fix = atol(token);
+                        break;
+                    case 7: data->sat = atol(token);
+                        break;
+                    case 9: data->alt = strtof(token, NULL) * 10;
+                        break;
                     default: break;
                 }
                 i++;
             };
 
-            if (i != PAS_GPGGA_LEN || !valid) return false;
+            if (i != PAS_GPGGA_LEN) return false;
         } else if (strncmp(PAS_GPRMC, msg, PAS_ID_LEN) == 0) {
             uint8_t i = 0;
             while ((token = strsep(&msg, PAS_NMEA_FS))) {
                 switch (i) {
-                    case 7: data->speed = strtof(token, NULL) * 100; break;
+                    case 7: data->speed = strtof(token, NULL) * 100;
+                        break;
                     default: break;
                 }
                 i++;
             };
 
-            if (i != PAS_GPRMC_LEN || !valid) return false;
+            if (i != PAS_GPRMC_LEN) return false;
         }
     }
 
