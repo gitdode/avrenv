@@ -49,7 +49,7 @@ static void writeCmd(const char *data) {
 
 /**
  * Reads one or many lines of output from the module,
- * starting with the first occurrence of '$'.
+ * starting with the first occurrence of '$'. 
  * TODO timeout blocking function?
  *
  * @param data lines of output
@@ -100,8 +100,8 @@ bool pasInit(void) {
      $PMTK010,002*2D
      */
 
-    // give some time to power up
-    _delay_ms(100);
+    // ignore (power on) messages for 1 second
+    _delay_ms(1000);
 
     // configure no output and wait for it to stop
     writeCmd(PAS_OUT_NONE);
