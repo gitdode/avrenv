@@ -450,7 +450,11 @@ int main(void) {
                         if (sdc) led_on();
 
                         rfmWake();
+                        #if RFM == 95 && LORA
+                        rfmLoRaTx(payload, sizeof (payload));
+                        #else
                         rfmTransmitPayload(payload, sizeof (payload), 0x24);
+                        #endif
                         rfmSleep();
 
                         if (sdc) {
