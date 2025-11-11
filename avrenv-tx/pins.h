@@ -28,6 +28,7 @@
 #define BME_CS_PD4      PIN4
 #define ENS_CS_PD5      PIN5
 #define SDC_CS_PD6      PIN6
+#define LED_PD7         PIN7
 
 #endif /* PINS_H */
 

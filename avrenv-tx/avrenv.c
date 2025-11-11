@@ -42,6 +42,12 @@
 /* Enables periodic interrupt timer */
 #define enable_pit()    RTC_PITCTRLA |= RTC_PITEN_bm
 
+/* Turns the LED on */
+#define led_on()        PORTD_OUT |= (1 << LED_PD7)
+
+/* Turns the LED off */
+#define led_off()       PORTD_OUT &= ~(1 << LED_PD7)
+
 #ifndef LORA
     #define LORA    0
 #endif
@@ -51,7 +57,7 @@
 #define USART       1
 
 /* Awake/busy interval in seconds */
-#define INTERVAL    8
+#define INTERVAL    4
 
 /* Battery low threshold */
 #define BAT_LOW_MV  3000
@@ -126,16 +132,12 @@ static void initPins(void) {
     PORTD_DIRSET = (1 << BME_CS_PD4);
     PORTD_PIN4CTRL |= PORT_PULLUPEN_bm;
 
-    if (ENS160) {
-        // PD5 is ENS120 CS pin (output pin + drive high)
-        PORTD_DIRSET = (1 << ENS_CS_PD5);
-        PORTD_OUTSET = (1 << ENS_CS_PD5);
-    }
-
     // PD6 is SD card CS pin (output pin + pullup)
     PORTD_DIRSET = (1 << SDC_CS_PD6);
-    // PORTD_OUTSET = (1 << SDC_CS_PD6);
     PORTD_PIN6CTRL |= PORT_PULLUPEN_bm;
+
+    // PD7 is LED pin (output pin)
+    PORTD_DIRSET = (1 << LED_PD7);
 }
 
 /* Sets CPU and peripherals clock speed */
@@ -260,7 +262,7 @@ static void printMeas(uint8_t power,
     div_t tdiv = div(bmedata->temperature, 100);
 
     // highly sophisticated IAQ algorithm
-    uint8_t aqi = 5 - min(4, bmedata->gas_resistance / 15000);
+    uint8_t aqi = 5 - min(4, bmedata->gas_resistance / 25000);
 
     char buf[128];
     snprintf(buf, sizeof (buf),
@@ -444,12 +446,16 @@ int main(void) {
                             bavg >> 8,
                             bavg
                         };
+
+                        if (sdc) led_on();
+
                         rfmWake();
                         rfmTransmitPayload(payload, sizeof (payload), 0x24);
                         rfmSleep();
 
                         if (sdc) {
                             bool sdcwrite = writeMeas(power, humidity, pressure, &bmedata, &pasdata);
+                            led_off();
                             if (USART && !sdcwrite) {
                                 printString("Writing to SD card failed!\r\n");
                             }
