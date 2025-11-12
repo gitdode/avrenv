@@ -13,8 +13,19 @@ RFM = 69
 # LoRa available only with RFM95
 LORA = 0
 
+# Display dimensions
+DISPLAY_WIDTH = 320
+DISPLAY_HEIGHT = 240
+# true = BGR, false = RGB
+BGR = true
+# Invert color
+INVERT = false
+# Flip image
+HFLIP = true
+VFLIP = true
+
 MAIN = avrenv.c
-SRC = rfm.c spi.c usart.c utils.c
+SRC = rfm.c spi.c tft.c usart.c utils.c
 
 CC = avr-gcc
 OBJCOPY = avr-objcopy
@@ -26,6 +37,8 @@ AVRDUDE = avrdude
 # CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUD=$(BAUD)
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUDRATE=$(BAUD)
 CFLAGS += -DRFM=$(RFM) -DLORA=$(LORA)
+CFLAGS += -DDISPLAY_WIDTH=$(DISPLAY_WIDTH) -DDISPLAY_HEIGHT=$(DISPLAY_HEIGHT)
+CFLAGS += -DINVERT=$(INVERT) -DBGR=$(BGR) -DHFLIP=$(HFLIP) -DVFLIP=$(VFLIP)
 CFLAGS += -O2 -I. -I../../
 CFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums 
 CFLAGS += -Wall -Wstrict-prototypes
@@ -37,7 +50,7 @@ CFLAGS += -std=gnu99
 
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c
-SRC += ../../librfm$(RFM)/librfm$(RFM).a
+SRC += ../../librfm$(RFM)/librfm$(RFM).a ../../libtft/libtft.a
 
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)

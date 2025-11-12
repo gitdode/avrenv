@@ -25,12 +25,17 @@
 #include "usart.h"
 #include "spi.h"
 #if RFM == 69
-#include "librfm69/librfm69.h"
+    #include "librfm69/librfm69.h"
 #endif
 #if RFM == 95
-#include "librfm95/librfm95.h"
+    #include "librfm95/librfm95.h"
 #endif
-#include "libsdc/libsdc.h"
+#include "libtft/libtft.h"
+#include "libtft/unifont.h"
+
+#define BLACK           0x0000
+#define RED             0xf800
+#define WHITE           0xffff
 
 /* Timebase used for timing internal delays */
 #define TIMEBASE_VALUE  ((uint8_t) ceil(F_CPU * 0.000001))
@@ -45,7 +50,7 @@
 #define led_off()       PORTD_OUT &= ~(1 << LED_PD7)
 
 #ifndef LORA
-#define LORA    0
+    #define LORA    0
 #endif
 
 #define USART       1
@@ -105,6 +110,11 @@ static void initPins(void) {
     PORTD_DIRSET = (1 << RFM_CS_PD1);
     PORTD_PIN1CTRL |= PORT_PULLUPEN_bm;
 
+    // TFT CS, D/C and RESET pins (output pins)
+    PORTD_DIRSET = (1 << TFT_CS_PD4);
+    PORTD_DIRSET = (1 << TFT_DC_PD5);
+    PORTD_DIRSET = (1 << TFT_RST_PD6);
+
     // PD7 is LED pin (output pin)
     PORTD_DIRSET = (1 << LED_PD7);
 }
@@ -145,8 +155,6 @@ static void initInts(void) {
     PORTD_PIN2CTRL = PORT_ISC_RISING_gc;
     // PD3 sense rising edge (RFM DIO4 (FSK)/DIO1 (LoRa))
     PORTD_PIN3CTRL = PORT_ISC_RISING_gc;
-    // PD6 sense rising edge (ENS160 INT)
-    // PORTD_PIN6CTRL = PORT_ISC_RISING_gc;
 }
 
 static void printData(uint8_t rssi, bool crc) {
@@ -154,6 +162,8 @@ static void printData(uint8_t rssi, bool crc) {
     snprintf(buf, sizeof (buf), "RSSI: %4d dBm, CRC: %d\r\n",
             -rssi, crc);
     printString(buf);
+    const __flash Font *unifont = &unifontFont;
+    tftWriteString(0, 0, unifont, buf, WHITE, BLACK);
 }
 
 /**
@@ -169,8 +179,11 @@ static void receiveData(void) {
         rfmLoRaStartRx();
     }
 #else
-    // TODO only RFM69
+    #if RFM == 69
     PayloadFlags flags = rfmPayloadReady();
+    #else
+    RxFlags flags = rfmPayloadReady();
+    #endif
     if (flags.ready) {
         uint8_t payload[32];
         rfmReadPayload(payload, sizeof (payload));
@@ -201,6 +214,9 @@ int main(void) {
     // slow down SPI for the breadboard wiring
     spiMid();
 
+    tftInit(DISPLAY_WIDTH, DISPLAY_HEIGHT, HFLIP, VFLIP, BGR, INVERT);
+    tftSetFrame(RED);
+
     bool radio = false;
 #if RFM == 69
     radio = rfmInit(433600, 0x24, 0x84);
@@ -215,7 +231,7 @@ int main(void) {
     }
 
     // start PIT after (lengthy) initialization
-    enable_pit();
+    // enable_pit();
 
     // enable global interrupts
     sei();

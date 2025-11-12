@@ -18,16 +18,13 @@
 #define SS_PA7          PIN7
 #define USART_TX_PC0    PIN0
 #define USART_RX_PC1    PIN1
-#define USART_TX_PA0    PIN0
-#define USART_RX_PA1    PIN1
-#define BAT_ADC_PC2     PIN2 // AIN30
 #define RFM_RST_PD0     PIN0
 #define RFM_CS_PD1      PIN1
 #define RFM_INT0_PD2    PIN2
 #define RFM_INT1_PD3    PIN3
-#define BME_CS_PD4      PIN4
-#define ENS_CS_PD5      PIN5
-#define SDC_CS_PD6      PIN6
+#define TFT_CS_PD4      PIN4
+#define TFT_DC_PD5      PIN5
+#define TFT_RST_PD6     PIN6
 #define LED_PD7         PIN7
 
 #endif /* PINS_H */
