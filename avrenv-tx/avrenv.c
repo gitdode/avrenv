@@ -317,7 +317,7 @@ int main(void) {
     initClock();
     initRTC();
     initADC();
-    initUSART();
+    if (USART) initUSART();
     initSPI();
     initI2C();
     initInts();
@@ -472,11 +472,12 @@ int main(void) {
             }
 
             // wait for USART tx to be done (before going to sleep)
-            wait_usart_tx_done();
+            if (USART) wait_usart_tx_done();
+
+            // save some power
+            sleep_mode();
         }
 
-        // save some power
-        sleep_mode();
     }
 
     return 0;
