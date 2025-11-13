@@ -34,10 +34,10 @@ void initUSART(void) {
     USART1_CTRLC = (0x03 << USART_CHSIZE_gp);
     // set TxD as output pin
     PORTC_DIRSET |= (1 << USART_TX_PC0);
-    // enable transmitter and receiver
-    USART1_CTRLB = (1 << USART_RXEN_bp) | (1 << USART_TXEN_bp);
+    // enable only transmitter
+    USART1_CTRLB = (1 << USART_TXEN_bp);
     // enable receive complete interrupt
-    USART1_CTRLA |= (1 << USART_RXCIE_bp);
+    // USART1_CTRLA |= (1 << USART_RXCIE_bp);
 }
 
 bool isUSARTReceived(void) {

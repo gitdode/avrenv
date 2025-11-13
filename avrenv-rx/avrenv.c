@@ -23,12 +23,7 @@
 #include "utils.h"
 #include "usart.h"
 #include "spi.h"
-#if RFM == 69
-    #include "librfm69/librfm69.h"
-#endif
-#if RFM == 95
-    #include "librfm95/librfm95.h"
-#endif
+#include "librfm69/librfm69.h"
 #include "libtft/libtft.h"
 #include "libtft/unifont.h"
 
