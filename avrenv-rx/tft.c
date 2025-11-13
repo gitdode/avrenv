@@ -11,8 +11,8 @@
 #include "pins.h"
 #include "spi.h"
 
-void _tftDelay100() {
-    _delay_ms(100);
+void _tftDelay60() {
+    _delay_ms(60);
 }
 
 void _tftSel() {

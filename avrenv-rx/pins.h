@@ -25,7 +25,6 @@
 #define TFT_CS_PD4      PIN4
 #define TFT_DC_PD5      PIN5
 #define TFT_RST_PD6     PIN6
-#define LED_PD7         PIN7
 
 #endif /* PINS_H */
 

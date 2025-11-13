@@ -18,8 +18,7 @@
 #include <math.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
-#include <avr/sleep.h>
+#include <util/atomic.h>
 
 #include "utils.h"
 #include "usart.h"
@@ -43,20 +42,48 @@
 /* Enables periodic interrupt timer */
 #define enable_pit()    RTC_PITCTRLA |= RTC_PITEN_bm
 
-/* Turns the LED on */
-#define led_on()        PORTD_OUT |= (1 << LED_PD7)
-
-/* Turns the LED off */
-#define led_off()       PORTD_OUT &= ~(1 << LED_PD7)
-
 #ifndef LORA
     #define LORA    0
 #endif
 
 #define USART       1
 
+/* Represents the data received from the transmitter */
+typedef struct {
+    /* Tx power in dBm */
+    uint8_t power;
+    /* Battery voltage in mV */
+    uint16_t voltage;
+    /* Temperature in degrees Celsius * 100 */
+    int16_t temperature;
+    /* Relative humidity in % */
+    uint8_t humidity;
+    /* Barometric pressure in hPa */
+    uint16_t pressure;
+    /* Gas sensor resistance in kOhm */
+    uint16_t gasres;
+    /* Latitude in degrees minutes (WGS84) x 10000 */
+    uint32_t lat;
+    /* Longitude in degrees minutes (WGS84) x 10000 */
+    uint32_t lon;
+    /* Fix: 0 = not available, 1 = GPS, 2 = differential GPS */
+    uint8_t fix;
+    /* Number of satellites used */
+    uint8_t sat;
+    /* Altitude in meters */
+    uint16_t alt;
+    /* Speed over ground in knots * 100 */
+    uint16_t speed;
+} EnvData;
+
 /* Periodic interrupt timer interrupt count (seconds) */
 static volatile uint32_t pitints = 0;
+
+/* Time delta between transmissions in seconds */
+static uint16_t rxtstart = 0;
+
+/* The awesome Unifont font */
+static const __flash Font *unifont = &unifontFont;
 
 /* Periodic interrupt timer interrupt */
 ISR(RTC_PIT_vect) {
@@ -114,9 +141,6 @@ static void initPins(void) {
     PORTD_DIRSET = (1 << TFT_CS_PD4);
     PORTD_DIRSET = (1 << TFT_DC_PD5);
     PORTD_DIRSET = (1 << TFT_RST_PD6);
-
-    // PD7 is LED pin (output pin)
-    PORTD_DIRSET = (1 << LED_PD7);
 }
 
 /* Sets CPU and peripherals clock speed */
@@ -157,40 +181,108 @@ static void initInts(void) {
     PORTD_PIN3CTRL = PORT_ISC_RISING_gc;
 }
 
-static void printData(uint8_t rssi, bool crc) {
-    char buf[25];
-    snprintf(buf, sizeof (buf), "RSSI: %4d dBm, CRC: %d\r\n",
-            -rssi, crc);
-    printString(buf);
-    const __flash Font *unifont = &unifontFont;
-    tftWriteString(0, 0, unifont, buf, WHITE, BLACK);
+/**
+ * Transforms the given payload received from the transmitter to
+ * the given structured data.
+ *
+ * @param payload received payload
+ * @param len length of received payload
+ * @param data structured data
+ */
+static void getData(uint8_t *payload, uint16_t len, EnvData *data) {
+    data->temperature =  (uint16_t)payload[0] << 8;
+    data->temperature |= (uint16_t)payload[1];
+    data->humidity = payload[2];
+    data->pressure =  (uint16_t)payload[3] << 8;
+    data->pressure |= (uint16_t)payload[4];
+    data->gasres =  (uint16_t)payload[5] << 8;
+    data->gasres |= (uint16_t)payload[6];
+    data->fix = payload[7];
+    data->sat = payload[8];
+    data->lat =  (uint32_t)payload[9] << 24;
+    data->lat |= (uint32_t)payload[10] << 16;
+    data->lat |= (uint32_t)payload[11] << 8;
+    data->lat |= (uint32_t)payload[12];
+    data->lon =  (uint32_t)payload[13] << 24;
+    data->lon |= (uint32_t)payload[14] << 16;
+    data->lon |= (uint32_t)payload[15] << 8;
+    data->lon |= (uint32_t)payload[16];
+    data->alt =  (uint16_t)payload[17] << 8;
+    data->alt |= (uint16_t)payload[18];
+    data->speed =  (uint16_t)payload[19] << 8;
+    data->speed |= (uint16_t)payload[20];
+    data->power = payload[21];
+    data->voltage =  (uint16_t)payload[22] << 8;
+    data->voltage |= (uint16_t)payload[23];
 }
 
 /**
- * Receives and handles the measurements.
+ * Handles the given data received from the transmitter including
+ * metrics from the receiver.
+ *
+ * @param rssi RSSI
+ * @param crc payload CRC check result
+ * @param dur duration since last transmission
+ * @param data structured data from transmitter
+ */
+static void handleData(uint8_t rssi, bool crc, uint8_t dur, EnvData *data) {
+    char buf[96];
+    snprintf(buf, sizeof (buf), "%u,%u,%u,%u,%u,%d,%u,%u,%u,%u,%u,%lu,%lu,%u,%u\r\n",
+            rssi, crc, dur,
+            data->voltage, data->power,
+            data->temperature, data->humidity, data->pressure, data->gasres,
+            data->fix, data->sat, data->lat, data->lon, data->alt, data->speed);
+    printString(buf);
+
+    div_t tdiv = div(divRoundNearest(data->temperature, 10), 10);
+    div_t sdiv = div(divRoundNearest(data->speed, 10), 10);
+
+    // highly sophisticated IAQ algorithm
+    uint8_t aqi = 5 - min(4, data->gasres / 25);
+
+    snprintf(buf, sizeof (buf), "RSSI: %4d dBm, CRC: %u, Time: %3u s",
+            -rssi, crc, dur);
+    tftWriteString(0, 0, unifont, buf, BLACK, WHITE);
+    snprintf(buf, sizeof (buf), "Bat: %4u mV, Pa: %2u dBm",
+            data->voltage, data->power);
+    tftWriteString(0, 16, unifont, buf, BLACK, WHITE);
+    snprintf(buf, sizeof (buf), "T: %c%3u.%u °C, %2u%%, P: %4u hPa",
+            data->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
+            data->humidity, data->pressure);
+    tftWriteString(0, 32, unifont, buf, BLACK, WHITE);
+    snprintf(buf, sizeof (buf), "TVOC: %3u kOhm (Fake AQI: %d)",
+            data->gasres, aqi);
+    tftWriteString(0, 48, unifont, buf, BLACK, WHITE);
+    snprintf(buf, sizeof (buf), "Sat Fix: %u, Nr. Sat: %2u",
+            data->fix, data->sat);
+    tftWriteString(0, 64, unifont, buf, BLACK, WHITE);
+    snprintf(buf, sizeof (buf), "Lat: %9lu, Lon: %9lu",
+            data->lat, data->lon);
+    tftWriteString(0, 80, unifont, buf, BLACK, WHITE);
+    snprintf(buf, sizeof (buf), "Alt: %5u m, Speed: %3u.%u kn",
+            data->alt, sdiv.quot, sdiv.rem);
+    tftWriteString(0, 96, unifont, buf, BLACK, WHITE);
+}
+
+/**
+ * Receives and handles the data from the receiver and goes
+ * back to receive mode when done.
  */
 static void receiveData(void) {
-#if RFM == 95 && LORA
-    RxFlags flags = rfmLoRaRxDone();
-    if (flags.ready) {
-        uint8_t payload[32];
-        rfmLoRaRxRead(payload, sizeof (payload));
-        printData(flags.rssi, flags.crc);
-        rfmLoRaStartRx();
-    }
-#else
-    #if RFM == 69
     PayloadFlags flags = rfmPayloadReady();
-    #else
-    RxFlags flags = rfmPayloadReady();
-    #endif
     if (flags.ready) {
-        uint8_t payload[32];
+        uint8_t dur = min(UCHAR_MAX, pitints - rxtstart);
+        rxtstart = pitints;
+
+        uint8_t payload[24];
         rfmReadPayload(payload, sizeof (payload));
-        printData(flags.rssi, flags.crc);
+
+        EnvData data = {0};
+        getData(payload, sizeof (payload), &data);
+        handleData(flags.rssi, flags.crc, dur, &data);
+
         rfmStartReceive(false);
     }
-#endif
 }
 
 int main(void) {
@@ -214,50 +306,36 @@ int main(void) {
     // slow down SPI for the breadboard wiring
     spiMid();
 
-    tftInit(DISPLAY_WIDTH, DISPLAY_HEIGHT, HFLIP, VFLIP, BGR, INVERT);
-    tftSetFrame(RED);
-
     bool radio = false;
-#if RFM == 69
     radio = rfmInit(433600, 0x24, 0x84);
-#endif
-#if RFM == 95
-    radio = rfmInit(868600, 0x24, 0x84, LORA);
-#endif
     if (radio) {
         rfmSetOutputPower(2);
     } else if (USART) {
         printString("Radio init failed!\r\n");
     }
 
+    tftInit(DISPLAY_WIDTH, DISPLAY_HEIGHT, HFLIP, VFLIP, BGR, INVERT);
+
+    spiFast();
+
+    tftSetFrame(BLACK);
+
     // start PIT after (lengthy) initialization
-    // enable_pit();
+    enable_pit();
 
     // enable global interrupts
     sei();
 
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-
     if (radio) {
-#if RFM == 95 && LORA
-        rfmLoRaStartRx();
-#else
         rfmStartReceive(false);
-#endif
     }
 
     while (true) {
         if (radio) {
-            led_on();
-            receiveData();
-            led_off();
+            ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+                receiveData();
+            }
         }
-
-        // wait for USART tx to be done (before going to sleep)
-        wait_usart_tx_done();
-
-        // save some power
-        sleep_mode();
     }
 
     return 0;
