@@ -31,7 +31,7 @@ typedef struct {
     /* Number of satellites used */
     uint8_t sat;
     /* Altitude in meters x 10 */
-    uint32_t alt;
+    int32_t alt;
     /* Speed over ground in knots * 100 */
     uint16_t speed;
 } SatData;
@@ -94,7 +94,7 @@ static void convert(FILE *envf, FILE *gpxf) {
             fprintf(gpxf, "      <trkpt lat=\"%u.%u\" lon=\"%u.%u\">\n",
                     lat_div.quot, (lat_div.rem + 30) / 60,
                     lon_div.quot, (lon_div.rem + 30) / 60);
-            fprintf(gpxf, "        <ele>%u</ele>\n", (data.alt + 5) / 10);
+            fprintf(gpxf, "        <ele>%d</ele>\n", (data.alt + 5) / 10);
             fprintf(gpxf, "        <time>%s</time>\n", tbuf);
             fprintf(gpxf, "      </trkpt>\n");
         }
