@@ -14,7 +14,7 @@ extern volatile uint32_t pitints;
 extern uint16_t bavg;
 
 /* SD card memory address */
-static uint32_t sdaddr;
+extern uint32_t sdaddr;
 
 /**
  * Transmits given payload to the receiver.

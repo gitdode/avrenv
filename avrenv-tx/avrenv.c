@@ -62,6 +62,9 @@ volatile uint32_t pitints = 0;
 /** Averaged battery voltage in millivolts */
 uint16_t bavg;
 
+/* SD card memory address */
+uint32_t sdaddr = 0;
+
 /* Periodic interrupt timer interrupt */
 ISR(RTC_PIT_vect) {
     // clear flag or interrupt remains active
@@ -292,7 +295,12 @@ int main(void) {
     }
 
     bool sdc = sdcInit();
-    if (USART && !sdc) {
+    if (sdc) {
+        char buf[SD_BLOCK_SIZE];
+        char *message = "--- [ system reset ] ---\n";
+        strncpy(buf, message, sizeof (buf));
+        sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
+    } else if (USART) {
         printString("SD card init failed!\r\n");
     }
 

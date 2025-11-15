@@ -82,15 +82,15 @@ static void convert(FILE *envf, FILE *gpxf) {
             i++;
         };
 
-        div_t lat_div = div(data.lat * 10, 10000000);
-        div_t lon_div = div(data.lon * 10, 10000000);
-
-        struct tm tm = *localtime(&(time_t){time(NULL)});
-        strptime(data.utc, "%H%M%S", &tm);
-        char tbuf[24];
-        strftime(tbuf, sizeof (tbuf), "%Y-%m-%dT%H:%M:%SZ", &tm);
-
         if (data.fix != 0) {
+            div_t lat_div = div(data.lat * 10, 10000000);
+            div_t lon_div = div(data.lon * 10, 10000000);
+
+            struct tm tm = *localtime(&(time_t){time(NULL)});
+            strptime(data.utc, "%H%M%S", &tm);
+            char tbuf[24];
+            strftime(tbuf, sizeof (tbuf), "%Y-%m-%dT%H:%M:%SZ", &tm);
+
             fprintf(gpxf, "      <trkpt lat=\"%u.%u\" lon=\"%u.%u\">\n",
                     lat_div.quot, (lat_div.rem + 30) / 60,
                     lon_div.quot, (lon_div.rem + 30) / 60);
