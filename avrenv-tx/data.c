@@ -13,9 +13,6 @@ extern volatile uint32_t pitints;
 /** Averaged battery voltage in millivolts */
 extern uint16_t bavg;
 
-/* SD card memory address */
-extern uint32_t sdaddr;
-
 /**
  * Transmits given payload to the receiver.
  *
@@ -35,6 +32,7 @@ static void transmitMeas(uint8_t *payload, uint8_t len) {
 /**
  * Writes given measurements to SD card.
  *
+ * @param sdaddr address to write to
  * @param power radio power in dBm
  * @param humidity relative humidity in %
  * @param pressure barometric pressure in hPa
@@ -42,7 +40,8 @@ static void transmitMeas(uint8_t *payload, uint8_t len) {
  * @param pasdata data from PA1616S
  * @return success
  */
-static bool writeMeas(uint8_t power,
+static bool writeMeas(uint32_t sdaddr,
+                      uint8_t power,
                       uint8_t humidity,
                       uint16_t pressure,
                       struct bme68x_data *bmedata,
@@ -59,7 +58,7 @@ static bool writeMeas(uint8_t power,
             pasdata->lat, pasdata->lon,
             pasdata->alt, pasdata->speed);
 
-    return sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
+    return sdcWriteSingleBlock(sdaddr, (uint8_t *)buf);
 }
 
 /**
@@ -109,7 +108,7 @@ void doEns(void) {
     }
 }
 
-void doMeas(bool sdc) {
+void doMeas(bool sdc, uint32_t sdaddr) {
     uint8_t power = rfmGetOutputPower();
 
     struct bme68x_data bmedata = {0};
@@ -161,9 +160,8 @@ void doMeas(bool sdc) {
 
         transmitMeas(payload, sizeof (payload));
 
-        // TODO how to memorize current address for watchdog resets?
         if (sdc) {
-            bool sdcwrite = writeMeas(power, humidity, pressure,
+            bool sdcwrite = writeMeas(sdaddr, power, humidity, pressure,
                                       &bmedata, &pasdata);
             led_off();
             if (USART && !sdcwrite) {

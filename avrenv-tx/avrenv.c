@@ -56,14 +56,17 @@
 /* Battery low threshold */
 #define BAT_LOW_MV  3000
 
+/* Copy of reset flags */
+static uint8_t rstfl;
+
+/* SD card memory address surviving soft resets */
+static uint32_t sdaddr __attribute__ ((section (".noinit")));
+
 /* Periodic interrupt timer interrupt count (seconds) */
 volatile uint32_t pitints = 0;
 
 /** Averaged battery voltage in millivolts */
 uint16_t bavg;
-
-/* SD card memory address */
-uint32_t sdaddr = 0;
 
 /* Periodic interrupt timer interrupt */
 ISR(RTC_PIT_vect) {
@@ -208,6 +211,16 @@ static void initInts(void) {
     // PORTD_PIN6CTRL = PORT_ISC_RISING_gc;
 }
 
+/* Initializes .noinit variables after a power on reset */
+static void initReset(void) {
+    rstfl = RSTCTRL_RSTFR;
+    if (RSTCTRL_RSTFR & RSTCTRL_PORF_bm) {
+        sdaddr = 0;
+    }
+    // clear all reset flags
+    RSTCTRL_RSTFR = 0x3f;
+}
+
 /**
  * Starts an immediate conversion and returns the result.
  *
@@ -247,6 +260,23 @@ static int16_t measureBat(void) {
     return mv;
 }
 
+/**
+ * Writes reset flags to SD card when a reset occurred.
+ */
+static void writeReset(void) {
+    char buf[SD_BLOCK_SIZE];
+    memset(buf, 0, SD_BLOCK_SIZE);
+    snprintf(buf, sizeof (buf),
+            "RESET UPDI: %u, SW: %u, WD: %u, EXT: %u, BO: %u, PO: %u\r\n",
+            (rstfl & RSTCTRL_UPDIRF_bm) >> RSTCTRL_UPDIRF_bp,
+            (rstfl & RSTCTRL_SWRF_bm) >> RSTCTRL_SWRF_bp,
+            (rstfl & RSTCTRL_WDRF_bm) >> RSTCTRL_WDRF_bp,
+            (rstfl & RSTCTRL_EXTRF_bm) >> RSTCTRL_EXTRF_bp,
+            (rstfl & RSTCTRL_BORF_bm) >> RSTCTRL_BORF_bp,
+            (rstfl & RSTCTRL_PORF_bm)) >> RSTCTRL_PORF_bp;
+    sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
+}
+
 int main(void) {
 
     initPins();
@@ -258,6 +288,7 @@ int main(void) {
     initSPI();
     initI2C();
     initInts();
+    initReset();
 
     if (USART) {
         printString("Hello avrenv transmitter!\r\n");
@@ -296,10 +327,7 @@ int main(void) {
 
     bool sdc = sdcInit();
     if (sdc) {
-        char buf[SD_BLOCK_SIZE];
-        char *message = "--- [ system reset ] ---\n";
-        strncpy(buf, message, sizeof (buf));
-        sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
+        writeReset();
     } else if (USART) {
         printString("SD card init failed!\r\n");
     }
@@ -331,7 +359,7 @@ int main(void) {
                     doEns();
                 }
                 if (radio && bme == 0 && pas) { // TODO include SD card?
-                    doMeas(sdc);
+                    doMeas(sdc, sdaddr++);
 
                     // all seems successfully initialized and running
                     wdt_reset();
