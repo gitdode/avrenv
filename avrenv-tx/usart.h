@@ -17,11 +17,14 @@
 #include "pins.h"
 #include "utils.h"
 
-#define USART_LENGTH 128
+#define USART_LENGTH    128
 
 #ifndef BAUDRATE
-#define BAUDRATE 9600
+    #define BAUDRATE    9600
 #endif
+
+/* Initialize and use USART or not */
+#define USART           1
 
 /* Asynchronous Normal mode: S = 16 */
 #define UBRR ((64 * F_CPU) / (16UL * BAUDRATE))

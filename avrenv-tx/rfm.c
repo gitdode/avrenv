@@ -7,12 +7,7 @@
 
 #include <util/delay.h>
 
-#if RFM == 69
-    #include "librfm69/librfm69.h"
-#endif
-#if RFM == 95
-    #include "librfm95/librfm95.h"
-#endif
+#include "librfm69/librfm69.h"
 #include "pins.h"
 #include "spi.h"
 
@@ -21,12 +16,7 @@ void _rfmDelay5() {
 }
 
 void _rfmOn() {
-#if RFM == 69
     PORTD_OUTCLR = (1 << RFM_RST_PD0);
-#endif
-#if RFM == 95
-    PORTD_OUTSET = (1 << RFM_RST_PD0);
-#endif
 }
 
 void _rfmSel() {

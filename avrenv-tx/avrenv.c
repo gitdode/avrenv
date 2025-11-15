@@ -14,27 +14,13 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <math.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <avr/sleep.h>
+#include <avr/wdt.h>
 
-#include "utils.h"
-#include "usart.h"
-#include "spi.h"
-#include "i2c.h"
-#if RFM == 69
-    #include "librfm69/librfm69.h"
-#endif
-#if RFM == 95
-    #include "librfm95/librfm95.h"
-#endif
-#include "bme688.h"
-#include "ens160.h"
-#include "pa1616s.h"
-#include "libsdc/libsdc.h"
+#include "data.h"
 
 /* Timebase used for timing internal delays */
 #define TIMEBASE_VALUE  ((uint8_t) ceil(F_CPU * 0.000001))
@@ -42,19 +28,27 @@
 /* Enables periodic interrupt timer */
 #define enable_pit()    RTC_PITCTRLA |= RTC_PITEN_bm
 
-/* Turns the LED on */
-#define led_on()        PORTD_OUT |= (1 << LED_PD7)
-
-/* Turns the LED off */
-#define led_off()       PORTD_OUT &= ~(1 << LED_PD7)
-
+/* FSK or LoRa modulation scheme */
 #ifndef LORA
     #define LORA    0
 #endif
 
-#define ENS160      0
+/* Radio frequency in kHz */
+#define FREQUENCY   433600
+/* Node address (FSK) */
+#define NODE_ADDR   0x28
+/* Broadcast address (FSK) */
+#define CAST_ADDR   0x84
 
-#define USART       1
+/* BME688 heater temperature in °C */
+#define HEATER_TEMP 300
+/* BME688 heater duration in ms */
+#define HEATER_DUR  100
+/* Initial ambient temperature in °C */
+#define AMB_TEMP    20
+
+/* Enable ENS160 gas sensor */
+#define ENS160      0
 
 /* Awake/busy interval in seconds */
 #define INTERVAL    4
@@ -63,13 +57,10 @@
 #define BAT_LOW_MV  3000
 
 /* Periodic interrupt timer interrupt count (seconds) */
-static volatile uint32_t pitints = 0;
+volatile uint32_t pitints = 0;
 
 /** Averaged battery voltage in millivolts */
-static uint16_t bavg;
-
-/* SD card memory address */
-static uint32_t sdaddr;
+uint16_t bavg;
 
 /* Periodic interrupt timer interrupt */
 ISR(RTC_PIT_vect) {
@@ -162,6 +153,14 @@ static void initRTC(void) {
     RTC_PITCTRLA |= RTC_PERIOD_CYC32768_gc;
 }
 
+/* Initializes the Watchdog */
+static void initWDT(void) {
+    // allow writing to protected register
+    CPU_CCP = CCP_IOREG_gc;
+    // 8 seconds watchdog period
+    WDT_CTRLA |= WDT_PERIOD_8KCLK_gc;
+}
+
 /* Initializes the ADC */
 static void initADC(void) {
     // enable ADC0
@@ -245,77 +244,12 @@ static int16_t measureBat(void) {
     return mv;
 }
 
-/**
- * Prints given measurements.
- *
- * @param power radio power in dBm
- * @param humidity relative humidity in %
- * @param pressure barometric pressure in hPa
- * @param bmedata measurements from BME688
- * @param pasdata data from PA1616S
- */
-static void printMeas(uint8_t power,
-                      uint8_t humidity,
-                      uint16_t pressure,
-                      struct bme68x_data *bmedata,
-                      NmeaData *pasdata) {
-    div_t tdiv = div(bmedata->temperature, 100);
-
-    // highly sophisticated IAQ algorithm
-    uint8_t aqi = 5 - min(4, bmedata->gas_resistance / 25000);
-
-    char buf[128];
-    snprintf(buf, sizeof (buf),
-            "%5lus, %u mV, %u dBm, %c%u.%u°C, %u%%, %u hPa, %lu Ohm (AQI: %u)\r\n",
-            pitints, bavg, power,
-            bmedata->temperature < 0 ? '-' : ' ', abs(tdiv.quot), abs(tdiv.rem),
-            humidity, pressure,
-            bmedata->gas_resistance, aqi);
-    printString(buf);
-
-    snprintf(buf, sizeof (buf),
-            "UTC: %06lu, Fix: %u, Sat: %u, Lat: %lu, Lon: %lu, Alt: %lu m, Speed: %u knots\r\n",
-            pasdata->utc, pasdata->fix, pasdata->sat,
-            pasdata->lat, pasdata->lon,
-            pasdata->alt / 10, pasdata->speed / 100);
-    printString(buf);
-}
-
-/**
- * Writes given measurements to SD card.
- *
- * @param power radio power in dBm
- * @param humidity relative humidity in %
- * @param pressure barometric pressure in hPa
- * @param bmedata measurements from BME688
- * @param pasdata data from PA1616S
- * @return success
- */
-static bool writeMeas(uint8_t power,
-                      uint8_t humidity,
-                      uint16_t pressure,
-                      struct bme68x_data *bmedata,
-                      NmeaData *pasdata) {
-    char buf[SD_BLOCK_SIZE];
-    memset(buf, 0, SD_BLOCK_SIZE);
-    snprintf(buf, sizeof (buf),
-            "%lu,%u,%u,%u,%u,%u,%lu,%06lu,%u,%u,%lu,%lu,%lu,%u\n",
-            pitints, bavg, power,
-            bmedata->temperature,
-            humidity, pressure,
-            bmedata->gas_resistance,
-            pasdata->utc, pasdata->fix, pasdata->sat,
-            pasdata->lat, pasdata->lon,
-            pasdata->alt, pasdata->speed);
-
-    return sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
-}
-
 int main(void) {
 
     initPins();
     initClock();
     initRTC();
+    initWDT();
     initADC();
     if (USART) initUSART();
     initSPI();
@@ -334,13 +268,7 @@ int main(void) {
     // slow down SPI for the breadboard wiring
     spiMid();
 
-    bool radio = false;
-    #if RFM == 69
-        radio = rfmInit(433600, 0x28, 0x84);
-    #endif
-    #if RFM == 95
-        radio = rfmInit(868600, 0x28, 0x84, LORA);
-    #endif
+    bool radio = rfmInit(FREQUENCY, NODE_ADDR, CAST_ADDR);
     if (radio) {
         rfmSetOutputPower(2);
     } else if (USART) {
@@ -349,7 +277,7 @@ int main(void) {
 
     static BmeIntf bmeIntf = {.port = &PORTD_OUT, .pin = BME_CS_PD4,
                               .addr = BME_I2C_ADDR_LOW};
-    int8_t bme = bmeInit(300, 100, 20, &bmeIntf);
+    int8_t bme = bmeInit(HEATER_TEMP, HEATER_DUR, AMB_TEMP, &bmeIntf);
     if (USART && bme != 0) {
         printString("BME688 init failed!\r\n");
         printInt(bme);
@@ -392,82 +320,13 @@ int main(void) {
                 if (USART) printString("Battery low\r\n");
             } else {
                 if (ens) {
-                    static EnsData ensdata = {0};
-                    bool ensmeas = ensMeasure(ENS_I2C_ADDR_LOW, &ensdata);
-                    if (USART && ensmeas) {
-                        char buf[48];
-                        snprintf(buf, sizeof (buf), "AQI: %u, TVOC: %5u ppb, eCO2: %5u ppm\r\n",
-                                ensdata.aqi, ensdata.tvoc, ensdata.eco2);
-                        printString(buf);
-                    }
+                    doEns();
                 }
-                if (radio && bme == 0 && pas) {
-                    uint8_t power = rfmGetOutputPower();
+                if (radio && bme == 0 && pas) { // TODO include SD card?
+                    doMeas(sdc);
 
-                    static struct bme68x_data bmedata = {0};
-                    int bmemeas = bmeMeasure(&bmedata);
-
-                    NmeaData pasdata = {0};
-                    bool pasread = pasRead(&pasdata);
-
-                    if (bmemeas == 0 && pasread) {
-                        uint8_t humidity = min(UCHAR_MAX,
-                                divRoundNearest(bmedata.humidity, 1000));
-                        uint16_t pressure = min(USHRT_MAX,
-                                divRoundNearest(bmedata.pressure, 100));
-                        uint16_t gasres = min(USHRT_MAX,
-                                divRoundNearest(bmedata.gas_resistance, 1000));
-                        uint16_t alt = min(USHRT_MAX,
-                                divRoundNearest(pasdata.alt, 10));
-
-                        uint8_t payload[] = {
-                            bmedata.temperature >> 8,
-                            bmedata.temperature,
-                            humidity,
-                            pressure >> 8,
-                            pressure,
-                            gasres >> 8,
-                            gasres,
-                            pasdata.fix,
-                            pasdata.sat,
-                            pasdata.lat >> 24,
-                            pasdata.lat >> 16,
-                            pasdata.lat >> 8,
-                            pasdata.lat,
-                            pasdata.lon >> 24,
-                            pasdata.lon >> 16,
-                            pasdata.lon >> 8,
-                            pasdata.lon,
-                            alt >> 8,
-                            alt,
-                            pasdata.speed >> 8,
-                            pasdata.speed,
-                            power,
-                            bavg >> 8,
-                            bavg
-                        };
-
-                        if (sdc) led_on();
-
-                        rfmWake();
-                        #if RFM == 95 && LORA
-                        rfmLoRaTx(payload, sizeof (payload));
-                        #else
-                        rfmTransmitPayload(payload, sizeof (payload), 0x24);
-                        #endif
-                        rfmSleep();
-
-                        if (sdc) {
-                            bool sdcwrite = writeMeas(power, humidity, pressure, &bmedata, &pasdata);
-                            led_off();
-                            if (USART && !sdcwrite) {
-                                printString("Writing to SD card failed!\r\n");
-                            }
-                        }
-                        if (USART) {
-                            printMeas(power, humidity, pressure, &bmedata, &pasdata);
-                        }
-                    }
+                    // all seems successfully initialized and running
+                    wdt_reset();
                 }
             }
 

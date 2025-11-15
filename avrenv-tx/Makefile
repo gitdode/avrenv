@@ -8,13 +8,11 @@ BAUD = 9600
 PROGRAMMER_TYPE = atmelice_updi
 PROGRAMMER_ARGS = -B 125kHz
 
-# Supported RFM radio module variants: 69 and 95
-RFM = 69
 # LoRa available only with RFM95
 LORA = 0
 
 MAIN = avrenv.c
-SRC = rfm.c sdc.c spi.c i2c.c usart.c utils.c bme68x/bme68x.c \
+SRC = data.c rfm.c sdc.c spi.c i2c.c usart.c utils.c bme68x/bme68x.c \
 	bme688.c ens160.c pa1616s.c
 
 CC = avr-gcc
@@ -38,14 +36,14 @@ CFLAGS += -std=gnu99
 
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c
-SRC += ../../librfm$(RFM)/librfm$(RFM).a
+SRC += ../../librfm69/librfm69.a
 SRC += ../../libsdc/libsdc.a
 
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)
 	
-$(TARGET).elf: spi.h i2c.h usart.h utils.h bme68x/bme68x.h bme68x/bme68x_defs.h \
-	bme688.h ens160.h pa1616s.h Makefile
+$(TARGET).elf: data.h spi.h i2c.h usart.h utils.h bme68x/bme68x.h \
+	bme68x/bme68x_defs.h bme688.h ens160.h pa1616s.h Makefile
 
 all: $(TARGET).hex
 
