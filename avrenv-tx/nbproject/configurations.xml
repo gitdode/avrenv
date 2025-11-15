@@ -10,6 +10,8 @@
       <in>avrenv.c</in>
       <in>bme688.c</in>
       <in>bme688.h</in>
+      <in>data.c</in>
+      <in>data.h</in>
       <in>ens160.c</in>
       <in>ens160.h</in>
       <in>i2c.c</in>
@@ -148,6 +150,10 @@
             ex="false"
             tool="0"
             flavor2="0">
+      </item>
+      <item path="data.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="data.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>
