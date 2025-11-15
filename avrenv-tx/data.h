@@ -39,8 +39,9 @@ void doEns(void);
  * SD card
  *
  * @param sdc presence of the SD card
+ * @param sdaddr current SD card address
  */
-void doMeas(bool sdc);
+void doMeas(bool sdc, uint32_t sdaddr);
 
 #endif /* DATA_H */
 
