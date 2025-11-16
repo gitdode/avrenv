@@ -267,13 +267,13 @@ static void writeReset(void) {
     char buf[SD_BLOCK_SIZE];
     memset(buf, 0, SD_BLOCK_SIZE);
     snprintf(buf, sizeof (buf),
-            "RESET UPDI: %u, SW: %u, WD: %u, EXT: %u, BO: %u, PO: %u\r\n",
+            "RESET UPDI: %u, SW: %u, WD: %u, EXT: %u, BO: %u, PO: %u\n",
             (rstfl & RSTCTRL_UPDIRF_bm) >> RSTCTRL_UPDIRF_bp,
             (rstfl & RSTCTRL_SWRF_bm) >> RSTCTRL_SWRF_bp,
             (rstfl & RSTCTRL_WDRF_bm) >> RSTCTRL_WDRF_bp,
             (rstfl & RSTCTRL_EXTRF_bm) >> RSTCTRL_EXTRF_bp,
             (rstfl & RSTCTRL_BORF_bm) >> RSTCTRL_BORF_bp,
-            (rstfl & RSTCTRL_PORF_bm)) >> RSTCTRL_PORF_bp;
+            (rstfl & RSTCTRL_PORF_bm) >> RSTCTRL_PORF_bp);
     sdcWriteSingleBlock(sdaddr++, (uint8_t *)buf);
 }
 
