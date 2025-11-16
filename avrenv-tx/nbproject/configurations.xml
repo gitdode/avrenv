@@ -10,6 +10,7 @@
       <in>avrenv.c</in>
       <in>bme688.c</in>
       <in>bme688.h</in>
+      <in>data.c</in>
       <in>data.h</in>
       <in>ens160.c</in>
       <in>ens160.h</in>
@@ -89,6 +90,11 @@
       <item path="/home/dode/dev/avrenv/avrenv-tx/bme68x/bme68x_defs.h"
             ex="false"
             tool="3"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/avrenv-tx/data.c"
+            ex="false"
+            tool="0"
             flavor2="0">
       </item>
       <item path="/home/dode/dev/avrenv/avrenv-tx/data.h"
