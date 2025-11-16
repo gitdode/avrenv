@@ -8,7 +8,6 @@ BAUD = 9600
 PROGRAMMER_TYPE = atmelice_updi
 PROGRAMMER_ARGS = -B 125kHz
 
-# LoRa available only with RFM95
 LORA = 0
 
 MAIN = avrenv.c
@@ -24,7 +23,7 @@ AVRDUDE = avrdude
 # https://github.com/avrdudes/avr-libc/issues/673
 # CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUD=$(BAUD)
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUDRATE=$(BAUD)
-CFLAGS += -DRFM=$(RFM) -DLORA=$(LORA)
+CFLAGS += -DLORA=$(LORA)
 CFLAGS += -O2 -I. -I../../
 CFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums 
 CFLAGS += -Wall -Wstrict-prototypes
