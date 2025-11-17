@@ -22,7 +22,7 @@ HFLIP = true
 VFLIP = true
 
 MAIN = avrenv.c
-SRC = rfm.c spi.c tft.c usart.c utils.c
+SRC = data.c rfm.c spi.c tft.c usart.c utils.c
 
 CC = avr-gcc
 OBJCOPY = avr-objcopy
@@ -52,7 +52,7 @@ SRC += ../../librfm69/librfm69.a ../../libtft/libtft.a
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)
 	
-$(TARGET).elf: spi.h usart.h utils.h Makefile
+$(TARGET).elf: data.h spi.h usart.h utils.h Makefile
 
 all: $(TARGET).hex
 
