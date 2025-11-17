@@ -58,9 +58,9 @@ static void getData(uint8_t *payload, uint16_t len, EnvData *data) {
  * @param data structured data from transmitter
  */
 static void handleData(uint8_t rssi, bool crc, uint8_t dur, EnvData *data) {
-    char buf[96];
-    snprintf(buf, sizeof (buf), "%u,%u,%u,%u,%u,%d,%u,%u,%u,%u,%u,%lu,%lu,%d,%u\r\n",
-            rssi, crc, dur,
+    char buf[128];
+    snprintf(buf, sizeof (buf), "%lu,%u,%u,%u,%u,%u,%d,%u,%u,%u,%u,%u,%lu,%lu,%d,%u\r\n",
+            pitints, rssi, crc, dur,
             data->voltage, data->power,
             data->temperature, data->humidity, data->pressure, data->gasres,
             data->fix, data->sat, data->lat, data->lon, data->alt, data->speed);

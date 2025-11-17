@@ -183,9 +183,7 @@ int main(void) {
 
     while (true) {
         if (radio) {
-            ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-                receiveData();
-            }
+            receiveData();
         }
     }
 
