@@ -7,12 +7,6 @@
 
 #include "data.h"
 
-/* Periodic interrupt timer interrupt count (seconds) */
-extern volatile uint32_t pitints;
-
-/** Averaged battery voltage in millivolts */
-extern uint16_t bavg;
-
 /**
  * Transmits given payload to the receiver.
  *
@@ -98,7 +92,7 @@ static void printMeas(uint8_t power,
 }
 
 void doEns(void) {
-    static EnsData ensdata = {0};
+    EnsData ensdata = {0};
     bool ensmeas = ensMeasure(ENS_I2C_ADDR_LOW, &ensdata);
     if (USART && ensmeas) {
         char buf[48];

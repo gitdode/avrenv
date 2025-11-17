@@ -28,6 +28,12 @@
 /* Turns the LED off */
 #define led_off()       PORTD_OUT &= ~(1 << LED_PD7)
 
+/* Periodic interrupt timer interrupt count (seconds) */
+extern volatile uint32_t pitints;
+
+/** Averaged battery voltage in millivolts */
+extern uint16_t bavg;
+
 /**
  * Gets measurements from ENS160 and prints them. Currently only temporarily
  * used to compare gas measurements with BME688.
