@@ -53,9 +53,6 @@
 /* Awake/busy interval in seconds */
 #define INTERVAL    4
 
-/* Battery low threshold */
-#define BAT_LOW_MV  3000
-
 /* Copy of reset flags */
 static uint8_t rstfl;
 
@@ -354,6 +351,9 @@ int main(void) {
 
             if (bavg < BAT_LOW_MV) {
                 if (USART) printString("Battery low\r\n");
+
+                // no need to reset
+                wdt_reset();
             } else {
                 if (ens) {
                     doEns();

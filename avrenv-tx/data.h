@@ -22,6 +22,15 @@
 #include "librfm69/librfm69.h"
 #include "libsdc/libsdc.h"
 
+/* Battery low threshold - RFMxx and BME688 */
+#define BAT_LOW_MV  2100
+
+/* Battery low threshold - SD card */
+#define BAT_SDC_MV  2700
+
+/* Battery low threshold - PA1616S */
+#define BAT_PAS_MV  3000
+
 /* Turns the LED on */
 #define led_on()        PORTD_OUT |= (1 << LED_PD7)
 

@@ -109,7 +109,14 @@ void doMeas(bool sdc, uint32_t sdaddr) {
     int bmemeas = bmeMeasure(&bmedata);
 
     NmeaData pasdata = {0};
-    bool pasread = pasRead(&pasdata);
+    bool pasread = false;
+    if (bavg < BAT_PAS_MV) {
+        // TODO pull EN of PA1616S low to power it off
+        // or send $PMTK161,0*28<CR><LF> to still be able to use the regulator
+        pasread = true;
+    } else {
+        pasread = pasRead(&pasdata);
+    }
 
     if (bmemeas == 0 && pasread) {
         uint8_t humidity = min(UCHAR_MAX,
@@ -148,13 +155,13 @@ void doMeas(bool sdc, uint32_t sdaddr) {
             bavg
         };
 
-        if (sdc) {
+        if (sdc && bavg > BAT_SDC_MV) {
             led_on();
         }
 
         transmitMeas(payload, sizeof (payload));
 
-        if (sdc) {
+        if (sdc && bavg > BAT_SDC_MV) {
             bool sdcwrite = writeMeas(sdaddr, power, humidity, pressure,
                                       &bmedata, &pasdata);
             led_off();
