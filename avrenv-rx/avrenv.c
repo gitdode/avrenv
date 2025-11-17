@@ -37,11 +37,13 @@
 /* Enables periodic interrupt timer */
 #define enable_pit()    RTC_PITCTRLA |= RTC_PITEN_bm
 
+/* FSK or LoRa modulation scheme */
 #ifndef LORA
     #define LORA    0
 #endif
 
-#define USART       1
+/* Expected length of payload from transmitter */
+#define PAYLOAD_LEN 24
 
 /* Represents the data received from the transmitter */
 typedef struct {
@@ -66,7 +68,7 @@ typedef struct {
     /* Number of satellites used */
     uint8_t sat;
     /* Altitude in meters */
-    uint16_t alt;
+    int16_t alt;
     /* Speed over ground in knots * 100 */
     uint16_t speed;
 } EnvData;
@@ -222,7 +224,7 @@ static void getData(uint8_t *payload, uint16_t len, EnvData *data) {
  */
 static void handleData(uint8_t rssi, bool crc, uint8_t dur, EnvData *data) {
     char buf[96];
-    snprintf(buf, sizeof (buf), "%u,%u,%u,%u,%u,%d,%u,%u,%u,%u,%u,%lu,%lu,%u,%u\r\n",
+    snprintf(buf, sizeof (buf), "%u,%u,%u,%u,%u,%d,%u,%u,%u,%u,%u,%lu,%lu,%d,%u\r\n",
             rssi, crc, dur,
             data->voltage, data->power,
             data->temperature, data->humidity, data->pressure, data->gasres,
@@ -254,7 +256,7 @@ static void handleData(uint8_t rssi, bool crc, uint8_t dur, EnvData *data) {
     snprintf(buf, sizeof (buf), "Lat: %9lu, Lon: %9lu",
             data->lat, data->lon);
     tftWriteString(0, 80, unifont, buf, BLACK, WHITE);
-    snprintf(buf, sizeof (buf), "Alt: %5u m, Speed: %3u.%u kn",
+    snprintf(buf, sizeof (buf), "Alt: %5d m, Speed: %3u.%u kn",
             data->alt, sdiv.quot, sdiv.rem);
     tftWriteString(0, 96, unifont, buf, BLACK, WHITE);
 }
@@ -264,19 +266,34 @@ static void handleData(uint8_t rssi, bool crc, uint8_t dur, EnvData *data) {
  * back to receive mode when done.
  */
 static void receiveData(void) {
-    PayloadFlags flags = rfmPayloadReady();
+#if LORA
+     RxFlags flags = rfmLoRaRxDone();
+#else
+     PayloadFlags flags = rfmPayloadReady();
+#endif
     if (flags.ready) {
         uint8_t dur = min(UCHAR_MAX, pitints - rxtstart);
         rxtstart = pitints;
 
-        uint8_t payload[24];
-        rfmReadPayload(payload, sizeof (payload));
+        uint8_t payload[PAYLOAD_LEN];
+#if LORA
+        uint8_t len = rfmLoRaRxRead(payload, sizeof (payload));
+#else
+        uint8_t len = rfmReadPayload(payload, sizeof (payload));
+#endif
+        if (len - 1 == PAYLOAD_LEN) { // len includes address byte
+            EnvData data = {0};
+            getData(payload, sizeof (payload), &data);
+            handleData(flags.rssi, flags.crc, dur, &data);
+        } else {
+            printString("Received payload with unexpected length\r\n");
+        }
 
-        EnvData data = {0};
-        getData(payload, sizeof (payload), &data);
-        handleData(flags.rssi, flags.crc, dur, &data);
-
+#if LORA
+        rfmLoRaStartRx();
+#else
         rfmStartReceive(false);
+#endif
     }
 }
 
@@ -322,7 +339,11 @@ int main(void) {
     sei();
 
     if (radio) {
+#if LORA
+        rfmLoRaStartRx();
+#else
         rfmStartReceive(false);
+#endif
     }
 
     while (true) {

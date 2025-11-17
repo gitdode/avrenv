@@ -9,6 +9,7 @@
       <in>spi.h</in>
       <in>tft.c</in>
       <in>usart.c</in>
+      <in>utils.c</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -83,6 +84,11 @@
             flavor2="0">
       </item>
       <item path="/home/dode/dev/avrenv/avrenv-rx/usart.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/avrenv-rx/utils.c"
             ex="false"
             tool="0"
             flavor2="0">

@@ -8,9 +8,6 @@ BAUD = 9600
 PROGRAMMER_TYPE = atmelice_updi
 PROGRAMMER_ARGS = -B 125kHz
 
-# Supported RFM radio module variants: 69 and 95
-RFM = 69
-# LoRa available only with RFM95
 LORA = 0
 
 # Display dimensions
@@ -36,7 +33,7 @@ AVRDUDE = avrdude
 # https://github.com/avrdudes/avr-libc/issues/673
 # CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUD=$(BAUD)
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUDRATE=$(BAUD)
-CFLAGS += -DRFM=$(RFM) -DLORA=$(LORA)
+CFLAGS += -DLORA=$(LORA)
 CFLAGS += -DDISPLAY_WIDTH=$(DISPLAY_WIDTH) -DDISPLAY_HEIGHT=$(DISPLAY_HEIGHT)
 CFLAGS += -DINVERT=$(INVERT) -DBGR=$(BGR) -DHFLIP=$(HFLIP) -DVFLIP=$(VFLIP)
 CFLAGS += -O2 -I. -I../../
@@ -50,7 +47,7 @@ CFLAGS += -std=gnu99
 
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c
-SRC += ../../librfm$(RFM)/librfm$(RFM).a ../../libtft/libtft.a
+SRC += ../../librfm69/librfm69.a ../../libtft/libtft.a
 
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)
