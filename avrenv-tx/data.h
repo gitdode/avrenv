@@ -23,7 +23,7 @@
 #include "libsdc/libsdc.h"
 
 /* Battery low threshold - RFMxx and BME688 */
-#define BAT_LOW_MV  2100
+#define BAT_LOW_MV  2400
 
 /* Battery low threshold - SD card */
 #define BAT_SDC_MV  2700
