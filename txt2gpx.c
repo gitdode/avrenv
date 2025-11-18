@@ -17,7 +17,6 @@
 #include <error.h>
 
 #define BLOCKSIZE   512
-#define FIELD_LEN   15
 
 /* Data read off the GPS module */
 typedef struct {
@@ -83,18 +82,18 @@ static void convert(FILE *envf, FILE *gpxf) {
             i++;
         };
 
-        if (i == FIELD_LEN && data.fix != 0) {
-            div_t lat_div = div(data.lat, 1000000);
-            div_t lon_div = div(data.lon, 1000000);
+        if (data.fix != 0) {
+            div_t lat_div = div(data.lat * 10, 10000000);
+            div_t lon_div = div(data.lon * 10, 10000000);
 
             struct tm tm = *localtime(&(time_t){time(NULL)});
             strptime(data.utc, "%H%M%S", &tm);
             char tbuf[24];
             strftime(tbuf, sizeof (tbuf), "%Y-%m-%dT%H:%M:%SZ", &tm);
 
-            fprintf(gpxf, "      <trkpt lat=\"%u.%05u\" lon=\"%u.%05u\">\n",
-                    lat_div.quot, lat_div.rem / 6,
-                    lon_div.quot, lon_div.rem / 6);
+            fprintf(gpxf, "      <trkpt lat=\"%u.%u\" lon=\"%u.%u\">\n",
+                    lat_div.quot, (lat_div.rem + 30) / 60,
+                    lon_div.quot, (lon_div.rem + 30) / 60);
             fprintf(gpxf, "        <ele>%d</ele>\n", (data.alt + 5) / 10);
             fprintf(gpxf, "        <time>%s</time>\n", tbuf);
             fprintf(gpxf, "      </trkpt>\n");
