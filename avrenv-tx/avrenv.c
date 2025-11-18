@@ -53,9 +53,6 @@
 /* Awake/busy interval in seconds */
 #define INTERVAL    4
 
-/* Battery low threshold */
-#define BAT_LOW_MV  3000
-
 /* Copy of reset flags */
 static uint8_t rstfl;
 
@@ -128,6 +125,10 @@ static void initPins(void) {
     // PD4 is BME68x CS pin (output pin + pullup)
     PORTD_DIRSET = (1 << BME_CS_PD4);
     PORTD_PIN4CTRL |= PORT_PULLUPEN_bm;
+
+    // PD5 is PA1616S enable pin (output pin + pullup)
+    PORTD_DIRSET = (1 << PAS_EN_PD5);
+    PORTD_OUT |= (1 << PAS_EN_PD5);
 
     // PD6 is SD card CS pin (output pin + pullup)
     PORTD_DIRSET = (1 << SDC_CS_PD6);
@@ -353,6 +354,9 @@ int main(void) {
             bavg = (bavg + bat) >> 1;
 
             if (bavg < BAT_LOW_MV) {
+                // pointless to reset if battery is low
+                wdt_reset();
+
                 if (USART) printString("Battery low\r\n");
             } else {
                 if (ens) {

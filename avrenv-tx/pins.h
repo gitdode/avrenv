@@ -26,7 +26,7 @@
 #define RFM_INT0_PD2    PIN2
 #define RFM_INT1_PD3    PIN3
 #define BME_CS_PD4      PIN4
-#define ENS_CS_PD5      PIN5
+#define PAS_EN_PD5      PIN5
 #define SDC_CS_PD6      PIN6
 #define LED_PD7         PIN7
 

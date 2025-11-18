@@ -109,7 +109,14 @@ void doMeas(bool sdc, uint32_t sdaddr) {
     int bmemeas = bmeMeasure(&bmedata);
 
     NmeaData pasdata = {0};
-    bool pasread = pasRead(&pasdata);
+    bool pasread = false;
+    if (bavg < BAT_PAS_MV && pas_sta()) {
+        // bat too low and PAS is on
+        pas_off();
+    } else {
+        // bat okay or PAS is off
+        pasread = !(pas_sta()) || pasRead(&pasdata);
+    }
 
     if (bmemeas == 0 && pasread) {
         uint8_t humidity = min(UCHAR_MAX,
@@ -148,13 +155,14 @@ void doMeas(bool sdc, uint32_t sdaddr) {
             bavg
         };
 
-        if (sdc) {
+        // here so LED is on a bit longer to be visible
+        if (sdc && bavg > BAT_SDC_MV) {
             led_on();
         }
 
         transmitMeas(payload, sizeof (payload));
 
-        if (sdc) {
+        if (sdc && bavg > BAT_SDC_MV) {
             bool sdcwrite = writeMeas(sdaddr, power, humidity, pressure,
                                       &bmedata, &pasdata);
             led_off();
