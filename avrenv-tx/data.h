@@ -37,6 +37,12 @@
 /* Turns the LED off */
 #define led_off()       PORTD_OUT &= ~(1 << LED_PD7)
 
+/* PA1616S is on or off */
+#define pas_sta()       PORTD_OUT & (1 << PAS_EN_PD5)
+
+/* Turns PA1616S off */
+#define pas_off()       PORTD_OUT &= ~(1 << PAS_EN_PD5)
+
 /* Periodic interrupt timer interrupt count (seconds) */
 extern volatile uint32_t pitints;
 

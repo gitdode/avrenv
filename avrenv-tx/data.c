@@ -110,12 +110,12 @@ void doMeas(bool sdc, uint32_t sdaddr) {
 
     NmeaData pasdata = {0};
     bool pasread = false;
-    if (bavg < BAT_PAS_MV) {
-        // TODO pull EN of PA1616S low to power it off
-        // or send $PMTK161,0*28<CR><LF> to still be able to use the regulator
-        pasread = true;
+    if (bavg < BAT_PAS_MV && pas_sta()) {
+        // bat too low and PAS is on
+        pas_off();
     } else {
-        pasread = pasRead(&pasdata);
+        // bat okay or PAS is off
+        pasread = !(pas_sta()) || pasRead(&pasdata);
     }
 
     if (bmemeas == 0 && pasread) {
