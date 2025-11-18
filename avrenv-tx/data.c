@@ -155,6 +155,7 @@ void doMeas(bool sdc, uint32_t sdaddr) {
             bavg
         };
 
+        // here so LED is on a bit longer to be visible
         if (sdc && bavg > BAT_SDC_MV) {
             led_on();
         }

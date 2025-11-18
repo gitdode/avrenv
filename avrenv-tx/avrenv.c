@@ -356,7 +356,7 @@ int main(void) {
             if (bavg < BAT_LOW_MV) {
                 if (USART) printString("Battery low\r\n");
 
-                // no need to reset
+                // pointless to reset if battery is low
                 wdt_reset();
             } else {
                 if (ens) {
