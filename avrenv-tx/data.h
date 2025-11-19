@@ -22,26 +22,26 @@
 #include "librfm69/librfm69.h"
 #include "libsdc/libsdc.h"
 
-/* Battery low threshold - RFMxx and BME688 */
+/* Battery low threshold */
 #define BAT_LOW_MV  2400
 
 /* Battery low threshold - SD card */
-#define BAT_SDC_MV  2700
+#define BAT_SDC_MV  2500
 
 /* Battery low threshold - PA1616S */
 #define BAT_PAS_MV  3000
 
 /* Turns the LED on */
-#define led_on()        PORTD_OUT |= (1 << LED_PD7)
+#define led_on()        (PORTD_OUT |= (1 << LED_PD7))
 
 /* Turns the LED off */
-#define led_off()       PORTD_OUT &= ~(1 << LED_PD7)
+#define led_off()       (PORTD_OUT &= ~(1 << LED_PD7))
 
 /* PA1616S is on or off */
-#define pas_sta()       PORTD_OUT & (1 << PAS_EN_PD5)
+#define pas_sta()       (PORTD_OUT & (1 << PAS_EN_PD5))
 
 /* Turns PA1616S off */
-#define pas_off()       PORTD_OUT &= ~(1 << PAS_EN_PD5)
+#define pas_off()       (PORTD_OUT &= ~(1 << PAS_EN_PD5))
 
 /* Periodic interrupt timer interrupt count (seconds) */
 extern volatile uint32_t pitints;

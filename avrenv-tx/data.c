@@ -115,7 +115,7 @@ void doMeas(bool sdc, uint32_t sdaddr) {
         pas_off();
     } else {
         // bat okay or PAS is off
-        pasread = !(pas_sta()) || pasRead(&pasdata);
+        pasread = !pas_sta() || pasRead(&pasdata);
     }
 
     if (bmemeas == 0 && pasread) {
