@@ -14,7 +14,7 @@ baloon afterwards.
 ![IMG_20251107_223051](https://github.com/user-attachments/assets/9540ea7a-6358-4019-a66e-71e69bba621a)
 
 The transmitter is reset by the watchdog should it get stuck somehow, while the SD card address is 
-meintained so previously written records are not overwritten. If battery power goes below 3000 mV, 
+maintained so previously written records are not overwritten. If battery power goes below 3000 mV, 
 the PA1616S GPS module is powered down, saving ~20 mA for the the rest to keep running. Below 2700 mV,
 no more attempt is made to write to SD card, while the measurements of the BME688 sensor are still 
 transmitted via radio. Below 2400 mV the whole thing pretty much stops doing anything.  
