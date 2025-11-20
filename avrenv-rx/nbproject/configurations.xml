@@ -60,6 +60,16 @@
             tool="0"
             flavor2="3">
       </item>
+      <item path="/home/dode/dev/avrenv/avrenv-rx/data.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="/home/dode/dev/avrenv/avrenv-rx/data.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="/home/dode/dev/avrenv/avrenv-rx/pins.h"
             ex="false"
             tool="3"
@@ -94,10 +104,6 @@
             ex="false"
             tool="0"
             flavor2="0">
-      </item>
-      <item path="data.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="data.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

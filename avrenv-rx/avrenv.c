@@ -18,7 +18,7 @@
 #include <math.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/atomic.h>
+#include <avr/sleep.h>
 
 #include "data.h"
 
@@ -173,6 +173,8 @@ int main(void) {
     // enable global interrupts
     sei();
 
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+
     if (radio) {
 #if LORA
         rfmLoRaStartRx();
@@ -185,6 +187,9 @@ int main(void) {
         if (radio) {
             receiveData();
         }
+
+        // save some power
+        sleep_mode();
     }
 
     return 0;

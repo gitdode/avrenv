@@ -36,12 +36,12 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/_ext/7eff1f40/avrenv.o \
+	${OBJECTDIR}/_ext/7eff1f40/data.o \
 	${OBJECTDIR}/_ext/7eff1f40/rfm.o \
 	${OBJECTDIR}/_ext/7eff1f40/spi.o \
 	${OBJECTDIR}/_ext/7eff1f40/tft.o \
 	${OBJECTDIR}/_ext/7eff1f40/usart.o \
-	${OBJECTDIR}/_ext/7eff1f40/utils.o \
-	${OBJECTDIR}/data.o
+	${OBJECTDIR}/_ext/7eff1f40/utils.o
 
 
 # C Compiler Flags
@@ -72,6 +72,10 @@ ${OBJECTDIR}/_ext/7eff1f40/avrenv.o: /home/dode/dev/avrenv/avrenv-rx/avrenv.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f40
 	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DBGR=1 -DDISPLAY_HEIGHT=240 -DDISPLAY_WIDTH=320 -DF_CPU=10000000UL -DHFLIP=1 -DINVERT=0 -DRFM=69 -DVFLIP=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -std=c99 -o ${OBJECTDIR}/_ext/7eff1f40/avrenv.o /home/dode/dev/avrenv/avrenv-rx/avrenv.c
 
+${OBJECTDIR}/_ext/7eff1f40/data.o: /home/dode/dev/avrenv/avrenv-rx/data.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f40
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DBGR=1 -DDISPLAY_HEIGHT=240 -DDISPLAY_WIDTH=320 -DF_CPU=10000000UL -DHFLIP=1 -DINVERT=0 -DRFM=69 -DVFLIP=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/_ext/7eff1f40/data.o /home/dode/dev/avrenv/avrenv-rx/data.c
+
 ${OBJECTDIR}/_ext/7eff1f40/rfm.o: /home/dode/dev/avrenv/avrenv-rx/rfm.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f40
 	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DBGR=1 -DDISPLAY_HEIGHT=240 -DDISPLAY_WIDTH=320 -DF_CPU=10000000UL -DHFLIP=1 -DINVERT=0 -DRFM=69 -DVFLIP=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/_ext/7eff1f40/rfm.o /home/dode/dev/avrenv/avrenv-rx/rfm.c
@@ -91,10 +95,6 @@ ${OBJECTDIR}/_ext/7eff1f40/usart.o: /home/dode/dev/avrenv/avrenv-rx/usart.c
 ${OBJECTDIR}/_ext/7eff1f40/utils.o: /home/dode/dev/avrenv/avrenv-rx/utils.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f40
 	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DBGR=1 -DDISPLAY_HEIGHT=240 -DDISPLAY_WIDTH=320 -DF_CPU=10000000UL -DHFLIP=1 -DINVERT=0 -DRFM=69 -DVFLIP=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/_ext/7eff1f40/utils.o /home/dode/dev/avrenv/avrenv-rx/utils.c
-
-${OBJECTDIR}/data.o: data.c
-	${MKDIR} -p ${OBJECTDIR}
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DBGR=1 -DDISPLAY_HEIGHT=240 -DDISPLAY_WIDTH=320 -DF_CPU=10000000UL -DHFLIP=1 -DINVERT=0 -DRFM=69 -DVFLIP=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -o ${OBJECTDIR}/data.o data.c
 
 # Subprojects
 .build-subprojects:
