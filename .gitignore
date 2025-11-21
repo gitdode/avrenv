@@ -7,3 +7,5 @@
 *.map
 /avrenv-tx/nbproject/private/
 /avrenv-rx/nbproject/private/
+/avrenv-client/nbproject/private/
+/avrenv-client/avrenv
