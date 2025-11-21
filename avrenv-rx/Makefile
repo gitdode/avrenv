@@ -1,4 +1,4 @@
-# Makefile to build and flash avrenv receuver
+# Makefile to build and flash avrenv receiver
 #
 # Simplified version from: https://github.com/hexagon5un/AVR-Programming
 
