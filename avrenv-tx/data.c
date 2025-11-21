@@ -113,10 +113,10 @@ void doMeas(bool sdc, uint32_t sdaddr) {
     if (bavg < BAT_PAS_MV && pas_sta()) {
         // bat too low and PAS is on
         pas_off();
-    } else {
-        // bat okay or PAS is off
-        pasread = !pas_sta() || pasRead(&pasdata);
     }
+    
+    // bat okay or PAS is off
+    pasread = !pas_sta() || pasRead(&pasdata);
 
     if (bmemeas == 0 && pasread) {
         uint8_t humidity = min(UCHAR_MAX,
