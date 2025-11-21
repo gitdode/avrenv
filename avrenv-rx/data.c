@@ -59,8 +59,8 @@ static void getData(uint8_t *payload, uint16_t len, EnvData *data) {
  */
 static void handleData(uint8_t rssi, bool crc, uint8_t dur, EnvData *data) {
     char buf[128];
-    snprintf(buf, sizeof (buf), "%lu,%u,%u,%u,%u,%u,%d,%u,%u,%u,%u,%u,%lu,%lu,%d,%u\r\n",
-            pitints, rssi, crc, dur,
+    snprintf(buf, sizeof (buf), "%lu,%u,%u,%u,%u,%u,%d,%u,%u,%u,%u,%u,%lu,%lu,%d,%u\n",
+            pitints, dur, rssi, crc,
             data->voltage, data->power,
             data->temperature, data->humidity, data->pressure, data->gasres,
             data->fix, data->sat, data->lat, data->lon, data->alt, data->speed);
