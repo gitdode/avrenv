@@ -19,23 +19,41 @@
 #include "serial.h"
 #include "data.h"
 
+#define LINE_BUF    512
+
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        printf("Usage: %s <serial port>\n", argv[0]);
+    if (argc != 3) {
+        printf("Usage: %s <serial port> <log file>\n", argv[0]);
 
         return EXIT_SUCCESS;
     }
 
-    char *dev = argv[1];
-    int fd = serial_open(dev);
+    char *devfile = argv[1];
+    char *logfile = argv[2];
+
+    int fd = serial_open(devfile);
     if (fd == -1) {
         return EXIT_FAILURE;
     }
 
-    char buf[512];
-    int len;
+    FILE *log = fopen(logfile, "a");
+    if (log == NULL) {
+        error(EXIT_FAILURE, errno,
+              "Error: log file '%s' could not be opened for writing",
+              logfile);
+    }
+
+    char buf[LINE_BUF];
+    int len, ret;
     while ((len = serial_read(fd, buf, sizeof (buf))) > 0) {
         printf("%s", buf);
+        ret = fprintf(log, "%s", buf);
+        if (ret < 0) {
+            error(0, errno,
+                  "Error: failed to write to log file '%s'",
+                  logfile);
+        }
+        fflush(log);
 
         EnvData data = {0};
         int fld = read_data(&data, buf);
@@ -48,6 +66,13 @@ int main(int argc, char **argv) {
                     data.pressure, data.gasres, data.fix, data.sat, data.lat,
                     data.lon, data.alt, data.speed);
         }
+    }
+
+    ret = fclose(log);
+    if (ret != 0) {
+        error(EXIT_FAILURE, errno,
+              "Error: log file '%s' could not be closed",
+              logfile);
     }
 
     return EXIT_SUCCESS;

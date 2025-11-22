@@ -19,7 +19,7 @@ int serial_open(char *dev) {
         return -1;
     }
 
-    struct termios serial;
+    struct termios serial = {0};
     serial.c_cflag = BAUDRATE | CRTSCTS | CS8 | CLOCAL | CREAD;
     serial.c_iflag = IGNPAR | ICRNL;
     serial.c_oflag = 0;
