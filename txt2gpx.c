@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
               "Error: input file '%s' could not be closed",
               envfile);
     }
-    if (fflush(gpxf) != 0 || fclose(gpxf) != 0) {
+    if (fclose(gpxf) != 0) {
         error(EXIT_FAILURE, errno,
               "Error: output file '%s' could not be closed",
               gpxfile);
