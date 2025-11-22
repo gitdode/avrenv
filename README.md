@@ -11,7 +11,7 @@ The idea is to send the sensors up to the sky with a weather baloon and collect
 some hopefully useful and interesting measurements, and of course to recover the 
 baloon afterwards.  
 
-![IMG_20251107_223051](https://github.com/user-attachments/assets/9540ea7a-6358-4019-a66e-71e69bba621a)
+![IMG_20251122_214512](https://github.com/user-attachments/assets/3c698c72-fcee-4ab1-9523-372c5a5f4ef3)
 
 The transmitter is reset by the watchdog should it get stuck somehow, while the SD card address is 
 maintained so previously written records are not overwritten. If battery voltage goes below 3000 mV, 
@@ -19,7 +19,7 @@ the PA1616S GPS module is powered down, saving ~20 mA for the the rest to keep r
 no more attempt is made to write to SD card, while the measurements of the BME688 sensor are still 
 transmitted via radio. Below 2400 mV the whole thing pretty much stops doing anything.  
 
-<img width="2096" height="1278" alt="Bildschirmfoto_20251119_004403" src="https://github.com/user-attachments/assets/54ed0d0b-42d3-49b2-9c6b-86ce40191ab2" />
+<img width="2096" height="1278" alt="IMG_20251119_004403" src="https://github.com/user-attachments/assets/297a95a5-d6ed-4c48-ab64-34f81f6b8821" />
 
 GPX tracks created from the records written to SD card and sent via radio every 4 seconds 
 look very good, so the PA1616S GPS module seems to do a good job.  
