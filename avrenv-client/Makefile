@@ -1,4 +1,4 @@
-# Makefile to build and avrenv client
+# Makefile to build avrenv client
 
 MAIN = avrenv.c
 SRC = serial.c data.c
