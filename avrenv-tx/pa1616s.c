@@ -19,10 +19,11 @@
  */
 static bool checkSum(char *msg) {
     char ckstr[3];
+    ckstr[0] = '\0';
     uint8_t cksum = 0;
     for (; *msg != '\0'; msg++) {
         if (*msg == '*') {
-            memcpy(ckstr, ++msg, sizeof (ckstr));
+            strlcpy(ckstr, ++msg, sizeof (ckstr));
             break;
         } else {
             cksum ^= *msg;
@@ -49,7 +50,7 @@ static void writeCmd(const char *data) {
 
 /**
  * Reads one or many lines of output from the module,
- * starting with the first occurrence of '$'. 
+ * starting with the first occurrence of '$'.
  * TODO timeout blocking function?
  *
  * @param data lines of output

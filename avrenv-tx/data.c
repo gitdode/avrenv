@@ -40,8 +40,7 @@ static bool writeMeas(uint32_t sdaddr,
                       uint16_t pressure,
                       struct bme68x_data *bmedata,
                       NmeaData *pasdata) {
-    char buf[SD_BLOCK_SIZE];
-    memset(buf, 0, SD_BLOCK_SIZE);
+    char buf[SD_BLOCK_SIZE] = {0};
     snprintf(buf, sizeof (buf),
             "%lu,%u,%u,%u,%u,%u,%lu,%06lu,%u,%u,%lu,%lu,%lu,%u\n",
             pitints, bavg, power,
@@ -114,7 +113,7 @@ void doMeas(bool sdc, uint32_t sdaddr) {
         // bat too low and PAS is on
         pas_off();
     }
-    
+
     // bat okay or PAS is off
     pasread = !pas_sta() || pasRead(&pasdata);
 

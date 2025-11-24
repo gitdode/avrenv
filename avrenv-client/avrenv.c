@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
               logfile);
     }
 
-    char buf[LINE_BUF];
+    char buf[LINE_BUF] = {0};
     int len, ret;
     while ((len = serial_read(fd, buf, sizeof (buf))) > 0) {
         printf("%s", buf);
