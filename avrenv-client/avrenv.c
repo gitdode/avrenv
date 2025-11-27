@@ -42,12 +42,12 @@ static void json_cleanup(json_object **json) {
  * @param data
  */
 static void post_data(const char *url, const char *data) {
-    __attribute__ ((cleanup(json_cleanup))) json_object *json = NULL;
     EnvData env = {0};
 
-    int fld = read_data(&env, data);
-    // +1 empty field from newline
-    if (fld == FIELD_LEN + 1) {
+    // -1 empty field from (ignored) newline
+    int fld = read_data(&env, data) - 1;
+    if (fld == FIELD_LEN) {
+        __attribute__ ((cleanup(json_cleanup))) json_object *json;
         json = to_json(&env);
         if (json) {
             const char *jsonstr = json_object_to_json_string(json);
@@ -57,6 +57,9 @@ static void post_data(const char *url, const char *data) {
                 printf("HTTP %ld\n", code);
             }
         }
+    } else {
+        printf("Unexpected number of data fields: %d (%d)\n",
+                fld, FIELD_LEN);
     }
 }
 

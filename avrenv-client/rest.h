@@ -15,6 +15,10 @@
 
 #include <curl/curl.h>
 
+/* Timeout for POSTing data in seconds */
+#define POST_TIMEOUT        10UL
+
+/* Content-Type: application/json */
 #define CONTENT_TYPE_JSON   "Content-Type: application/json"
 
 /**

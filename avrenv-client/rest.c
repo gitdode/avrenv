@@ -59,6 +59,13 @@ int curl_post(const char *url, const char *data, long *code) {
             return (int)res;
         }
 
+        res = curl_easy_setopt(curl, CURLOPT_TIMEOUT, POST_TIMEOUT);
+        if (res != CURLE_OK) {
+            fprintf(stderr, "Setting timeout failed: %s\n",
+                    curl_easy_strerror(res));
+            return (int)res;
+        }
+
         res = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
         if (res != CURLE_OK) {
             fprintf(stderr, "Setting POST data failed: %s\n",
