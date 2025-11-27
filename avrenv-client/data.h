@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <json-c/json.h>
+
 #define FIELD_LEN   16
 
 /* Represents the data received from the transmitter */
@@ -52,6 +54,16 @@ typedef struct {
 } EnvData;
 
 /**
+ * Returns the given structured data as Json object.
+ * 
+ * The returned json_object must be freed with json_object_put() after use.
+ * 
+ * @param data structured data
+ * @return Json object
+ */
+json_object* to_json(EnvData *data);
+
+/**
  * Comma-separates the given '\0' terminated line into fields 
  * and assigns the converted values to the given structured data.
  * 
@@ -59,7 +71,7 @@ typedef struct {
  * @param line '\0' terminated string optionally ending with a '\n'
  * @return field length
  */
-int read_data(EnvData *data, char *line);
+int read_data(EnvData *data, const char *line);
 
 #endif /* DATA_H */
 

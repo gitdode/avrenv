@@ -10,7 +10,7 @@ SIZE = size
 
 CFLAGS = -std=gnu23 -g -ggdb -Wall -O2 -I. \
 	-I/usr/include/x86_64-linux-gnu
-LIBS = -lcurl
+LIBS = -lcurl -ljson-c
 
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c

@@ -2,6 +2,8 @@
  * File:   data.c
  * Author: torsten.roemer@luniks.net
  *
+ * json-c is awesome!
+ *
  * Created on 21.11.2025, 20:24
  */
 
@@ -69,7 +71,50 @@ static void read_field(EnvData *data, int index, char *token) {
     }
 }
 
-int read_data(EnvData *data, char *line) {
+json_object* to_json(EnvData *data) {
+    static json_object *root;
+    root = json_object_new_object();
+    if (!root) {
+        return NULL;
+    }
+
+    json_object_object_add(root, "time",
+            json_object_new_int(data->time));
+    json_object_object_add(root, "dur",
+            json_object_new_int(data->dur));
+    json_object_object_add(root, "rssi",
+            json_object_new_int(data->rssi));
+    json_object_object_add(root, "crc",
+            json_object_new_int(data->crc));
+    json_object_object_add(root, "voltage",
+            json_object_new_int(data->voltage));
+    json_object_object_add(root, "power",
+            json_object_new_int(data->power));
+    json_object_object_add(root, "temperature",
+            json_object_new_uint64(data->temperature));
+    json_object_object_add(root, "humidity",
+            json_object_new_int(data->humidity));
+    json_object_object_add(root, "pressure",
+            json_object_new_int(data->pressure));
+    json_object_object_add(root, "gasres",
+            json_object_new_int(data->gasres));
+    json_object_object_add(root, "fix",
+            json_object_new_int(data->fix));
+    json_object_object_add(root, "sat",
+            json_object_new_int(data->sat));
+    json_object_object_add(root, "lat",
+            json_object_new_int(data->lat));
+    json_object_object_add(root, "lon",
+            json_object_new_int(data->lon));
+    json_object_object_add(root, "alt",
+            json_object_new_uint64(data->alt));
+    json_object_object_add(root, "speed",
+            json_object_new_int(data->speed));
+
+    return root;
+}
+
+int read_data(EnvData *data, const char *line) {
     char *copy = strdup(line);
     char *freeme = copy;
     char *token;

@@ -38,6 +38,6 @@ void curl_cleanup(void);
  * @param code HTTP return code
  * @return 0 on success
  */
-int curl_post(char *url, char *data, long *code);
+int curl_post(const char *url, const char *data, long *code);
 
 #endif /* REST_H */

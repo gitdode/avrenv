@@ -36,7 +36,7 @@ static void free_slist(struct curl_slist **chunk) {
     curl_slist_free_all(*chunk);
 }
 
-int curl_post(char *url, char *data, long *code) {
+int curl_post(const char *url, const char *data, long *code) {
     __attribute__ ((cleanup(free_slist))) struct curl_slist *chunk = NULL;
     __attribute__ ((cleanup(easy_cleanup))) CURL *curl;
     static CURLcode res;

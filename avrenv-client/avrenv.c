@@ -26,6 +26,40 @@
 /* REST endpoint to send data from receiver to */
 #define SERVER_URL  "http://localhost:8080/data"
 
+/* Cleans up the Json object when post_data() returns */
+static void json_cleanup(json_object **json) {
+    int freed = json_object_put(*json);
+    if (freed != 1) {
+        puts("json_object was not freed, only the refcount decremented");
+    }
+}
+
+/**
+ * Converts given data from receiver to a Json object and POSTs it
+ * to the given URL.
+ *
+ * @param url
+ * @param data
+ */
+static void post_data(const char *url, const char *data) {
+    __attribute__ ((cleanup(json_cleanup))) json_object *json = NULL;
+    EnvData env = {0};
+
+    int fld = read_data(&env, data);
+    // +1 empty field from newline
+    if (fld == FIELD_LEN + 1) {
+        json = to_json(&env);
+        if (json) {
+            const char *jsonstr = json_object_to_json_string(json);
+            long code;
+            int res = curl_post(url, jsonstr, &code);
+            if (res == 0) {
+                printf("HTTP %ld\n", code);
+            }
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     if (argc != 3) {
         printf("Usage: %s <serial port> <log file>\n", argv[0]);
@@ -52,8 +86,8 @@ int main(int argc, char **argv) {
     if (log == NULL) {
         curl_cleanup();
         error(EXIT_FAILURE, errno,
-              "Log file '%s' could not be opened for writing",
-              logfile);
+                "Log file '%s' could not be opened for writing",
+                logfile);
     }
 
     char buf[LINE_LEN] = {0};
@@ -63,30 +97,12 @@ int main(int argc, char **argv) {
         ret = fprintf(log, "%s", buf);
         if (ret < 0) {
             error(0, errno,
-                  "Failed to write to log file '%s'",
-                  logfile);
+                    "Failed to write to log file '%s'",
+                    logfile);
         }
         fflush(log);
 
-        EnvData data = {0};
-        int fld = read_data(&data, buf);
-        if (fld == FIELD_LEN + 1) {
-            printf("T: %u, D: %hhu, RSSI: %hhu, CRC: %hhu, P: %hhu, V: %hu, "
-                   "T: %hd, H: %hhu, P: %hu, G: %hu, F: %hhu, S: %hhu, "
-                   "L: %u, L: %u, A: %hd, S: %hu\n",
-                    data.time, data.dur, data.rssi, data.crc, data.power,
-                    data.voltage, data.temperature, data.humidity,
-                    data.pressure, data.gasres, data.fix, data.sat, data.lat,
-                    data.lon, data.alt, data.speed);
-
-            char json[512];
-            snprintf(json, sizeof (json), "{\"time\": \"%u\"}", data.time);
-            long code;
-            int res = curl_post(SERVER_URL, json, &code);
-            if (res == 0) {
-                printf("Sent data: HTTP %ld\n", code);
-            }
-        }
+        post_data(SERVER_URL, buf);
     }
 
     curl_cleanup();
@@ -94,8 +110,8 @@ int main(int argc, char **argv) {
     ret = fclose(log);
     if (ret != 0) {
         error(EXIT_FAILURE, errno,
-              "Log file '%s' could not be closed",
-              logfile);
+                "Log file '%s' could not be closed",
+                logfile);
     }
 
     return EXIT_SUCCESS;
