@@ -4,9 +4,8 @@
     <df root="/home/dode/dev/avrenv/avrenv-client" name="0">
       <in>avrenv.c</in>
       <in>data.c</in>
-      <in>data.h</in>
+      <in>rest.c</in>
       <in>serial.c</in>
-      <in>serial.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -42,6 +41,7 @@
           <cTool>
             <incDir>
               <pElem>.</pElem>
+              <pElem>/usr/include/x86_64-linux-gnu</pElem>
             </incDir>
           </cTool>
         </makeTool>
@@ -57,13 +57,26 @@
         <cTool flags="0">
         </cTool>
       </item>
-      <item path="data.c" ex="false" tool="0" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-client/data.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
       </item>
-      <item path="data.h" ex="false" tool="3" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-client/rest.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
       </item>
-      <item path="serial.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="serial.h" ex="false" tool="3" flavor2="0">
+      <item path="/home/dode/dev/avrenv/avrenv-client/serial.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
       </item>
     </conf>
   </confs>

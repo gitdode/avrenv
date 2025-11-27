@@ -14,7 +14,9 @@
 int serial_open(char *dev) {
     int fd = open(dev, O_RDONLY | O_NOCTTY);
     if (fd == -1) {
-        perror(dev);
+        error(0, errno,
+              "Failed to open serial port '%s'",
+              dev);
 
         return -1;
     }

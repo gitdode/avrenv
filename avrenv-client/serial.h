@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <termios.h>
 
+/* Baudrate used by the receiver */
 #define BAUDRATE B9600
 
 /**

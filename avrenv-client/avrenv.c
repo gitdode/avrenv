@@ -18,8 +18,13 @@
 
 #include "serial.h"
 #include "data.h"
+#include "rest.h"
 
-#define LINE_BUF    512
+/* Max. expected length of line of data from receiver */
+#define LINE_LEN    512
+
+/* REST endpoint to send data from receiver to */
+#define SERVER_URL  "http://localhost:8080/data"
 
 int main(int argc, char **argv) {
     if (argc != 3) {
@@ -28,36 +33,44 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
 
+    int cinit = curl_init();
+    if (cinit) {
+        return EXIT_FAILURE;
+    }
+
     char *devfile = argv[1];
     char *logfile = argv[2];
 
     int fd = serial_open(devfile);
     if (fd == -1) {
+        curl_cleanup();
+
         return EXIT_FAILURE;
     }
 
     FILE *log = fopen(logfile, "a");
     if (log == NULL) {
+        curl_cleanup();
         error(EXIT_FAILURE, errno,
-              "Error: log file '%s' could not be opened for writing",
+              "Log file '%s' could not be opened for writing",
               logfile);
     }
 
-    char buf[LINE_BUF] = {0};
+    char buf[LINE_LEN] = {0};
     int len, ret;
     while ((len = serial_read(fd, buf, sizeof (buf))) > 0) {
         printf("%s", buf);
         ret = fprintf(log, "%s", buf);
         if (ret < 0) {
             error(0, errno,
-                  "Error: failed to write to log file '%s'",
+                  "Failed to write to log file '%s'",
                   logfile);
         }
         fflush(log);
 
         EnvData data = {0};
         int fld = read_data(&data, buf);
-        if (fld != FIELD_LEN) {
+        if (fld == FIELD_LEN + 1) {
             printf("T: %u, D: %hhu, RSSI: %hhu, CRC: %hhu, P: %hhu, V: %hu, "
                    "T: %hd, H: %hhu, P: %hu, G: %hu, F: %hhu, S: %hhu, "
                    "L: %u, L: %u, A: %hd, S: %hu\n",
@@ -65,13 +78,23 @@ int main(int argc, char **argv) {
                     data.voltage, data.temperature, data.humidity,
                     data.pressure, data.gasres, data.fix, data.sat, data.lat,
                     data.lon, data.alt, data.speed);
+
+            char json[512];
+            snprintf(json, sizeof (json), "{\"time\": \"%u\"}", data.time);
+            long code;
+            int res = curl_post(SERVER_URL, json, &code);
+            if (res == 0) {
+                printf("Sent data: HTTP %ld\n", code);
+            }
         }
     }
+
+    curl_cleanup();
 
     ret = fclose(log);
     if (ret != 0) {
         error(EXIT_FAILURE, errno,
-              "Error: log file '%s' could not be closed",
+              "Log file '%s' could not be closed",
               logfile);
     }
 

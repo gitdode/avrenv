@@ -122,13 +122,13 @@ int main(int argc, char **argv) {
     FILE *envf = fopen(envfile, "r");
     if (envf == NULL) {
         error(EXIT_FAILURE, errno,
-              "Error: input file '%s' could not be opened for reading",
+              "Input file '%s' could not be opened for reading",
               envfile);
     }
     FILE *gpxf = fopen(gpxfile, "w+");
     if (gpxf == NULL) {
         error(EXIT_FAILURE, errno,
-              "Error: output file '%s' could not be opened for writing",
+              "Output file '%s' could not be opened for writing",
               gpxfile);
     }
 
@@ -136,12 +136,12 @@ int main(int argc, char **argv) {
 
     if (fclose(envf) != 0) {
         error(EXIT_FAILURE, errno,
-              "Error: input file '%s' could not be closed",
+              "Input file '%s' could not be closed",
               envfile);
     }
     if (fclose(gpxf) != 0) {
         error(EXIT_FAILURE, errno,
-              "Error: output file '%s' could not be closed",
+              "Output file '%s' could not be closed",
               gpxfile);
     }
 
