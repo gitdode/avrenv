@@ -53,7 +53,7 @@ typedef struct {
 typedef struct {
     /* HTTP status code */
     long code;
-    /* Response data, must be freed after use */
+    /* Response data */
     char *data;
     /* Response data length */
     size_t length;
@@ -61,7 +61,7 @@ typedef struct {
 
 /* Token with expiration time */
 typedef struct {
-    /* Access token, should be freed after final use */
+    /* Access token */
     char *access;
     /* Expiration time */
     time_t exp;
@@ -82,6 +82,8 @@ void curl_cleanup(void);
 /**
  * POSTs the given request to the given URL and sets the response.
  * 
+ * Response.data must be freed after use.
+ * 
  * @param url URL to post request to
  * @param req request
  * @param resp response
@@ -92,6 +94,8 @@ int curl_post(const char *url, Request *req, Response *resp);
 /**
  * Gets a token from the auth server and returns it updated on success 
  * or unchanged on failure.
+ * 
+ * Token.access should be freed after final use.
  *
  * @param username
  * @param password
