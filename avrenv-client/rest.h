@@ -18,8 +18,6 @@
 
 #include "data.h"
 
-#define BUFFERSIZE          16777216
-
 /* Timeout for POSTing data in seconds */
 #define POST_TIMEOUT        10UL
 
