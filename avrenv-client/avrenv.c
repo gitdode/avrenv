@@ -2,8 +2,8 @@
  * File:   avrenv.c
  * Author: torsten.roemer@luniks.net
  *
- * Client program for avrenv; reads serial data from the receiver
- * and sends it to the web service.
+ * Client program for avrenv; reads serial data from the receiver,
+ * writes it to a log file and sends it to the web service.
  *
  * Created on 21.11.2025, 18:10
  */
@@ -15,6 +15,7 @@
 #include <string.h>
 #include <errno.h>
 #include <error.h>
+#include <signal.h>
 
 #include "serial.h"
 #include "data.h"
@@ -23,51 +24,35 @@
 /* Max. expected length of line of data from receiver */
 #define LINE_LEN    512
 
-/* REST endpoint to send data from receiver to */
-#define SERVER_URL  "http://localhost:8080/data"
+/* Log file stream */
+static FILE *log;
 
-/* Cleans up the Json object when post_data() returns */
-static void json_cleanup(json_object **json) {
-    int freed = json_object_put(*json);
-    if (freed != 1) {
-        puts("json_object was not freed, only the refcount decremented");
-    }
-}
+/* Auth token */
+static Token token;
 
 /**
- * Converts given data from receiver to a Json object and POSTs it
- * to the given URL.
+ * Clean up on CTRL+C before exiting.
  *
- * @param url
- * @param data
+ * @param signo signal number
  */
-static void post_data(const char *url, const char *data) {
-    EnvData env = {0};
+static void cleanup(int signo) {
+    curl_cleanup();
+    free((void *)token.access);
+    if (log) fclose(log);
 
-    // -1 empty field from (ignored) newline
-    int fld = read_data(&env, data) - 1;
-    if (fld == FIELD_LEN) {
-        __attribute__ ((cleanup(json_cleanup))) json_object *json;
-        json = to_json(&env);
-        if (json) {
-            const char *jsonstr = json_object_to_json_string(json);
-            long code;
-            int res = curl_post(url, jsonstr, &code);
-            if (res == 0) {
-                printf("HTTP %ld\n", code);
-            }
-        }
-    } else {
-        printf("Unexpected number of data fields: %d (%d)\n",
-                fld, FIELD_LEN);
-    }
+    exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) {
-        printf("Usage: %s <serial port> <log file>\n", argv[0]);
+    if (argc != 5) {
+        printf("Usage: %s <serial port> <log file> <username> <password>\n",
+               argv[0]);
 
         return EXIT_SUCCESS;
+    }
+
+    if (signal(SIGINT, cleanup) == SIG_ERR) {
+        error(EXIT_FAILURE, errno, "Failed to set signal handler");
     }
 
     int cinit = curl_init();
@@ -77,6 +62,8 @@ int main(int argc, char **argv) {
 
     char *devfile = argv[1];
     char *logfile = argv[2];
+    char *username = argv[3];
+    char *password = argv[4];
 
     int fd = serial_open(devfile);
     if (fd == -1) {
@@ -85,7 +72,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    FILE *log = fopen(logfile, "a");
+    log = fopen(logfile, "a");
     if (log == NULL) {
         curl_cleanup();
         error(EXIT_FAILURE, errno,
@@ -105,11 +92,16 @@ int main(int argc, char **argv) {
         }
         fflush(log);
 
-        post_data(SERVER_URL, buf);
+        time_t now = time(NULL);
+        printf("Token expires in %ld s\n", token.exp - now);
+        if (token.exp - 30 < now) {
+            token = *get_token(username, password, &token);
+        }
+        post_data(SERVER_URL, token.access, buf);
     }
 
     curl_cleanup();
-
+    free((void *)token.access);
     ret = fclose(log);
     if (ret != 0) {
         error(EXIT_FAILURE, errno,
