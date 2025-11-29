@@ -166,8 +166,8 @@ Token *get_token(char *username, char *password, Token *token) {
             json = json_tokener_parse(resp.data);
             json_object *jaccess = json_object_object_get(json, "access_token");
             const char *iaccess = json_object_get_string(jaccess);
-            size_t len = strlen(iaccess);
-            token->access = realloc((void *)token->access, len + 1);
+            size_t len = strlen(iaccess) + 1;
+            token->access = realloc((void *)token->access, len);
             strlcpy(token->access, iaccess, len);
             json_object *jexpires = json_object_object_get(json, "expires_in");
             time_t now = time(NULL);

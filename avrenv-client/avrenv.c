@@ -2,8 +2,8 @@
  * File:   avrenv.c
  * Author: torsten.roemer@luniks.net
  *
- * Client program for avrenv; reads serial data from the receiver
- * and sends it to the web service.
+ * Client program for avrenv; reads serial data from the receiver,
+ * writes it to a log file and sends it to the web service.
  *
  * Created on 21.11.2025, 18:10
  */
@@ -15,6 +15,7 @@
 #include <string.h>
 #include <errno.h>
 #include <error.h>
+#include <signal.h>
 
 #include "serial.h"
 #include "data.h"
@@ -23,12 +24,35 @@
 /* Max. expected length of line of data from receiver */
 #define LINE_LEN    512
 
+/* Log file stream */
+static FILE *log;
+
+/* Auth token */
+static Token token;
+
+/**
+ * Clean up on CTRL+C before exiting.
+ *
+ * @param signo signal number
+ */
+static void cleanup(int signo) {
+    curl_cleanup();
+    free((void *)token.access);
+    if (log) fclose(log);
+
+    exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char **argv) {
     if (argc != 5) {
         printf("Usage: %s <serial port> <log file> <username> <password>\n",
                argv[0]);
 
         return EXIT_SUCCESS;
+    }
+
+    if (signal(SIGINT, cleanup) == SIG_ERR) {
+        error(EXIT_FAILURE, errno, "Failed to set signal handler");
     }
 
     int cinit = curl_init();
@@ -48,7 +72,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    FILE *log = fopen(logfile, "a");
+    log = fopen(logfile, "a");
     if (log == NULL) {
         curl_cleanup();
         error(EXIT_FAILURE, errno,
@@ -56,7 +80,6 @@ int main(int argc, char **argv) {
                 logfile);
     }
 
-    Token token = {.access = malloc(0), .exp = (time_t){time(NULL)}};
     char buf[LINE_LEN] = {0};
     int len, ret;
     while ((len = serial_read(fd, buf, sizeof (buf))) > 0) {
@@ -77,10 +100,8 @@ int main(int argc, char **argv) {
         post_data(SERVER_URL, token.access, buf);
     }
 
-    free((void *)token.access);
-    token.access = NULL;
     curl_cleanup();
-
+    free((void *)token.access);
     ret = fclose(log);
     if (ret != 0) {
         error(EXIT_FAILURE, errno,
