@@ -12,8 +12,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 
 #include <curl/curl.h>
+
+#include "data.h"
+
+#define BUFFERSIZE          16777216
 
 /* Timeout for POSTing data in seconds */
 #define POST_TIMEOUT        10UL
@@ -25,7 +30,16 @@
 #define CONTENT_TYPE_FURL   "Content-Type: application/x-www-form-urlencoded"
 
 /* Authorization header */
-#define BEARER_AUTH_HEADER  "Authorization: Bearer "
+#define HEADER_BEARER_AUTH   "Authorization: Bearer "
+
+/* Token endpoint of the auth server */
+#define TOKEN_URL   "http://localhost:8090/realms/luniks/protocol/openid-connect/token"
+
+/* Format for direct access grant login request form data */
+#define TOKEN_REQ   "grant_type=password&client_id=public&username=%s&password=%s"
+
+/* REST endpoint to send data from receiver to */
+#define SERVER_URL  "http://localhost:8080/data"
 
 /* Request object */
 typedef struct {
@@ -33,19 +47,27 @@ typedef struct {
     const char *data;
     /* Content type */
     const char *type;
-    /* Bearer token */
-    const char *token;
+    /* Access token */
+    const char *access;
 } Request;
 
 /* Response object */
 typedef struct {
     /* HTTP status code */
     long code;
-    /* Response data */
+    /* Response data, must be freed after use */
     char *data;
     /* Response data length */
     size_t length;
 } Response;
+
+/* Token with expiration time */
+typedef struct {
+    /* Access token, should be freed after final use */
+    char *access;
+    /* Expiration time */
+    time_t exp;
+} Token;
 
 /**
  * Initializes libcurl globally.
@@ -68,5 +90,25 @@ void curl_cleanup(void);
  * @return 0 on success
  */
 int curl_post(const char *url, Request *req, Response *resp);
+
+/**
+ * Gets a token from the auth server and returns it updated on success 
+ * or unchanged on failure.
+ *
+ * @param username
+ * @param password
+ * @return updated or unchanged token
+ */
+Token *get_token(char *username, char *password, Token *token);
+
+/**
+ * Converts given data from receiver to a Json object and POSTs it
+ * to the given URL.
+ *
+ * @param url server url
+ * @param sessionid login session id
+ * @param data Json data
+ */
+void post_data(const char *url, const char *sessionid, const char *data);
 
 #endif /* REST_H */

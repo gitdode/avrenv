@@ -2,8 +2,6 @@
  * File:   data.c
  * Author: torsten.roemer@luniks.net
  *
- * json-c is awesome!
- *
  * Created on 21.11.2025, 20:24
  */
 
@@ -125,6 +123,7 @@ int read_data(EnvData *data, const char *line) {
     }
 
     free(freeme);
+    freeme = NULL;
 
     return i;
 }
