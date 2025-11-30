@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="Experimental Weather Baloon">
+        <meta name="keywords" content="avrenv">
+        <meta name="author" content="torsten.roemer@luniks.net">
+
+        <title>Weather Baloon</title>
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+              crossorigin=""/>
+
+        {#bundle /}
+    </head>
+
+    <body>
+        <div id="container">
+            <h3>Weather Baloon</h3>
+
+            <p>What the baloon is currently doing (or not)</p>
+
+            <div id="main">
+                <div id="map"></div>
+                <div id="data">
+
+                    <p>Transmission</p>
+                    <table>
+                        <tr>
+                            <th>Uptime</th>
+                            <th>Δ (s)</th>
+                            <th>RSSI (dBm)</th>
+                            <th>CRC</th>
+                            <th>Voltage (mV)</th>
+                            <th>TX (dBm)</th>
+                        </tr>
+                        <tr>
+                            <td id="time">
+                            <td id="dur">
+                            <td id="rssi">
+                            <td id="crc">
+                            <td id="voltage">
+                            <td id="power">
+                        </tr>
+                    </table>
+
+                    <p>Environment</p>
+                    <table>
+                        <tr>
+                            <th>Temperature (°C)</th>
+                            <th>Humidity (%)</th>
+                            <th>Pressure (hPa)</th>
+                            <th>Gas Res. (kΩ)</th>
+                        </tr>
+                        <tr>
+                            <td id="temperature">
+                            <td id="humidity">
+                            <td id="pressure">
+                            <td id="gasres">
+                        </tr>
+                    </table>
+
+                    <p>Satellite</p>
+                    <table>
+                        <tr>
+                            <th>Fix</th>
+                            <th>Count</th>
+                        </tr>
+                        <tr>
+                            <td id="fix">
+                            <td id="sat">
+                        </tr>
+                    </table>
+
+                    <p>Position</p>
+                    <table>
+                        <tr>
+                            <th>Latitude (dec°)</th>
+                            <th>Longitude (dec°)</th>
+                            <th>Altitude (m)</th>
+                            <th>Speed (knots)</th>
+                        </tr>
+                        <tr>
+                            <td id="lat">
+                            <td id="lon">
+                            <td id="alt">
+                            <td id="speed">
+                        </tr>
+                    </table>
+
+                    <div id="controls">
+                        <button id="update">Update</button>
+                        <label><input type="checkbox" id="auto">Auto</label>
+                        <button id="center">Center</button>
+                    </div>
+                    <div id="info">
+                        <p>Update: Updates data and position once</p>
+                        <p>Auto: Update data and position every 3 seconds</p>
+                        <p>Center: Centers map to current position</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                crossorigin="">
+        </script>
+    </body>
+</html>
