@@ -68,9 +68,6 @@ function auto() {
     }
 }
 
-/**
- * Functions to get data from the rest endpoint.
- */
 $(document).ready(function () {
     $('#update').on('click', data);
     $('#auto').on('click', auto);
