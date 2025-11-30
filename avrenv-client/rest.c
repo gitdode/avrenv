@@ -54,6 +54,9 @@ static void json_cleanup(json_object **json) {
 /**
  * Writer callback providing response data and length.
  *
+ * This function is called multiple times for large responses!
+ * Thanks to https://everything.curl.dev/examples/getinmem.html
+ *
  * @param data response data owned by libcurl
  * @param size length is size * nmemb
  * @param nmemb length is size * nmemb
@@ -61,18 +64,20 @@ static void json_cleanup(json_object **json) {
  * @return response length
  */
 static size_t writer(char *data, size_t size, size_t nmemb, void *respptr) {
-    size_t length = size * nmemb + 1;
-    Response *resp = (Response *)respptr;
-    resp->data = malloc(length);
-    if (resp->data) {
-        memcpy(resp->data, data, length - 1);
-        resp->data[length - 1] = '\0';
-        resp->length = length;
-    } else {
-        resp->length = 0;
+    size_t length = size * nmemb;
+    Response *resp = (Response *) respptr;
+
+    resp->data = realloc(resp->data, resp->length + length + 1);
+    if (resp->data == NULL) {
+        error(0, ENOMEM, "Insufficient memory to read response data");
+        return 0;
     }
 
-    return size * nmemb;
+    memcpy(&(resp->data[resp->length]), data, length);
+    resp->length += length;
+    resp->data[resp->length] = 0;
+
+    return length;
 }
 
 int curl_post(const char *url, Request *req, Response *resp) {

@@ -24,9 +24,9 @@ typedef struct {
     /* Timestamp in UTC: hhmmss */
     char *utc;
     /* Latitude in degrees minutes (WGS84) x 10000 */
-    uint32_t lat;
+    int32_t lat;
     /* Longitude in degrees minutes (WGS84) x 10000 */
-    uint32_t lon;
+    int32_t lon;
     /* Fix: 0 = not available, 1 = GPS, 2 = differential GPS */
     uint8_t fix;
     /* Number of satellites used */
@@ -92,9 +92,9 @@ static void convert(FILE *envf, FILE *gpxf) {
             char tbuf[24];
             strftime(tbuf, sizeof (tbuf), "%Y-%m-%dT%H:%M:%SZ", &tm);
 
-            fprintf(gpxf, "      <trkpt lat=\"%u.%05u\" lon=\"%u.%05u\">\n",
-                    lat_div.quot, lat_div.rem / 6,
-                    lon_div.quot, lon_div.rem / 6);
+            fprintf(gpxf, "      <trkpt lat=\"%d.%05u\" lon=\"%d.%05u\">\n",
+                    lat_div.quot, abs(lat_div.rem) / 6,
+                    lon_div.quot, abs(lon_div.rem) / 6);
             fprintf(gpxf, "        <ele>%d</ele>\n", (data.alt + 5) / 10);
             fprintf(gpxf, "        <time>%s</time>\n", tbuf);
             fprintf(gpxf, "      </trkpt>\n");
