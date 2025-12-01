@@ -1,75 +1,23 @@
+/*
+ * File:   script.js
+ * Author: torsten.roemer@luniks.net
+ * 
+ * Leaflet is awesome!
+ *
+ * Created on 30.11.2025, 16:27
+ */
+
 import $ from 'jquery';
 
-var lat = 50.71020;
-var lon = 3.45672;
+var lat = 50.70375;
+var lon = 3.45252;
 var zoom = 13;
 
 var map = L.map('map');
 var marker = null;
 
-function update(center) {
-    $.ajax({
-        url: '/data',
-        type: 'get',
-        // dataType : 'text',
-        cache: false,
-        contentType: false,
-        processData: false,
-        success: function (data) {
-            $('#time').text(data.time);
-            $('#dur').text(data.dur);
-            $('#rssi').text(data.rssi);
-            $('#crc').text(data.crc);
-            $('#voltage').text(data.voltage);
-            $('#power').text(data.power);
-            $('#temperature').text(data.temperature);
-            $('#humidity').text(data.humidity);
-            $('#pressure').text(data.pressure);
-            $('#gasres').text(data.gasres);
-            $('#fix').text(data.fix);
-            $('#sat').text(data.sat);
-            $('#lat').text(data.lat);
-            $('#lon').text(data.lon);
-            $('#alt').text(data.alt);
-            $('#speed').text(data.speed);
-
-            if (data.lat !== 0 && data.lon !== 0) {
-                if (center) {
-                    map.setView([data.lat, data.lon], 13);
-                }
-
-                if (marker !== null) {
-                    marker.remove();
-                }
-                marker = L.marker([data.lat, data.lon]).addTo(map);
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(thrownError + ': ' + xhr.responseText);
-        }
-    });
-
-    return false;
-}
-
-function data() {
-    update(false);
-}
-
-function center() {
-    update(true);
-}
-
-function auto() {
-    if ($('#auto').is(':checked')) {
-        window.setInterval(data, 3000);
-    } else {
-        window.clearInterval();
-    }
-}
-
 /**
- * Functions to get data from the rest endpoint.
+ * "Initialization" done when the document is "ready".
  */
 $(document).ready(function () {
     $('#update').on('click', data);
@@ -84,3 +32,112 @@ $(document).ready(function () {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 });
+
+/**
+ * Updates data and map marker without centering the map.
+ * 
+ * @returns {void}
+ */
+function data() {
+    update(false);
+}
+
+/**
+ * Updates data and map marker and centers the map.
+ * 
+ * @returns {void}
+ */
+function center() {
+    update(true);
+}
+
+/**
+ * Sets or clears auto update when the checkbox was checked or unchecked, 
+ * respectively.
+ * 
+ * @returns {void}
+ */
+function auto() {
+    if ($('#auto').is(':checked')) {
+        window.setInterval(data, 3000);
+    } else {
+        window.clearInterval();
+    }
+}
+
+/**
+ * Gets the current data set from the service and updates the table and 
+ * the map marker to the current position, and centers the map if given
+ * argument is true.
+ * 
+ * @param {Boolean} center true if map should be centered
+ * @returns {Boolean}
+ */
+function update(center) {
+    $.ajax({
+        url: '/data',
+        type: 'get',
+        // dataType : 'text',
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function (data) {
+            ui(data, center);
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log('Getting data failed: ' + thrownError);
+        }
+    });
+
+    return false;
+}
+
+/**
+ * Updates the table and the map marker to the current position
+ * with the given data, and centers the map if given argument is true.
+ * 
+ * @param {Json} data
+ * @param {Boolean} center
+ * @returns {void}
+ */
+function ui(data, center) {
+    var crc = data.crc === 1 ? 'OK' : 'NOK';
+    $('#crc').text(crc);
+    
+    // do nothing if radio transmission had a CRC error
+    if (data.crc !== 1) {
+        return;
+    }
+    
+    var fix = data.fix !== 0 ? 'Yes' : 'No';
+
+    $('#time').text(data.time);
+    $('#dur').text(data.dur);
+    $('#rssi').text(data.rssi);
+    // $('#crc').text(data.crc);
+    $('#voltage').text(data.voltage);
+    $('#power').text(data.power);
+    $('#temperature').text(data.temperature);
+    $('#humidity').text(data.humidity);
+    $('#pressure').text(data.pressure);
+    $('#gasres').text(data.gasres);
+    $('#fix').text(fix);
+    $('#sat').text(data.sat);
+    $('#lat').text(data.lat);
+    $('#lon').text(data.lon);
+    $('#alt').text(data.alt);
+    $('#speed').text(data.speed);
+
+    // only update map if GPS module has a satellite fix
+    if (data.fix === 1) {
+        if (center) {
+            map.setView([data.lat, data.lon], 13);
+        }
+
+        if (marker !== null) {
+            marker.remove();
+        }
+        marker = L.marker([data.lat, data.lon]).addTo(map);
+    }
+
+}
