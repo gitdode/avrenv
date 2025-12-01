@@ -1,3 +1,12 @@
+/*
+ * File:   style.css
+ * Author: torsten.roemer@luniks.net
+ * 
+ * I am a real CSS expert.
+ *
+ * Created on 30.11.2025, 13:35
+ */
+
 body {
     font-family: monospace;
     font-size: 12pt;
@@ -54,4 +63,9 @@ td {
     margin-right: 1%;
     margin-bottom: 1%;
     width: 98%;
+}
+
+.desc {
+    font-weight: bold;
+    color: dodgerblue;
 }

@@ -2,9 +2,7 @@ package net.luniks;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -46,19 +44,20 @@ public class DataResource {
     private JsonObject convert(final JsonObject raw) {
         final DecimalFormat df = new DecimalFormat("0.0");
         df.setDecimalFormatSymbols(new DecimalFormatSymbols(Locale.ROOT));
-        final DateTimeFormatter dtf = new DateTimeFormatterBuilder().appendPattern("hh:mm:ss").toFormatter();
+        final Duration duration = Duration.ofSeconds(raw.getInt("time", 0));
         
-        final String time = dtf.format(LocalTime.ofSecondOfDay(raw.getInt("time", 0)));
+        final String time = String.format("%02d:%02d:%02d", 
+                duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart());
         final int dur = raw.getInt("dur", 0);
         final int rssi = -raw.getInt("rssi", 0);
-        final String crc = raw.getInt("crc", 0) == 1 ? "OK" : "NOK";
+        final int crc = raw.getInt("crc", 0);
         final int voltage = raw.getInt("voltage", 0);
         final int power = raw.getInt("power", 0);
         final String temperature = df.format(raw.getInt("temperature", 0) / 100f);
         final int humidity = raw.getInt("humidity", 0);
         final int pressure = raw.getInt("pressure", 0);
         final int gasres = raw.getInt("gasres", 0);
-        final String fix = raw.getInt("fix", 0) > 0 ? "Yes" : "No";
+        final int fix = raw.getInt("fix", 0);
         final int sat = raw.getInt("sat", 0);
         final String lat = toDecimalDegrees(raw.getInt("lat", 0));
         final String lon = toDecimalDegrees(raw.getInt("lon", 0));
