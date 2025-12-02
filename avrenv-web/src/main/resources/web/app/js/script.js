@@ -15,6 +15,7 @@ var zoom = 13;
 
 var map = L.map('map');
 var marker = null;
+var intId = 0;
 
 /**
  * "Initialization" done when the document is "ready".
@@ -59,9 +60,9 @@ function center() {
  */
 function auto() {
     if ($('#auto').is(':checked')) {
-        window.setInterval(data, 3000);
+        intId = window.setInterval(data, 3000);
     } else {
-        window.clearInterval();
+        window.clearInterval(intId);
     }
 }
 
@@ -131,7 +132,8 @@ function ui(data, center) {
     // only update map if GPS module has a satellite fix
     if (data.fix === 1) {
         if (center) {
-            map.setView([data.lat, data.lon], 13);
+            zoom = map.getZoom();
+            map.setView([data.lat, data.lon], zoom);
         }
 
         if (marker !== null) {

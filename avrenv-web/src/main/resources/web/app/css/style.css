@@ -69,3 +69,18 @@ td {
     font-weight: bold;
     color: dodgerblue;
 }
+
+@media (max-width: 1199px) {
+    #map {
+        float: none;
+        margin: 1%;
+        width: 98%;
+        height: 640px;
+    }
+
+    #data {
+        float: none;
+        margin: 1%;
+        width: 98%;
+    }
+}
