@@ -34,5 +34,5 @@ and caches it in memory. The Json data is POSTed to the REST endpoint along with
 the most recent data set is stored in memory, from where it can be concurrently read by the same 
 [Quarkus webapp](https://baloon.luniks.net) also serving the REST endpoint.  
 When the access token is about to expire, the client program simply gets a new one instead of 
-refreshing it. Like that, there will be always about 6-7 sessions for the same user in Keycloak, 
-which seems to be acceptable.  
+refreshing it. Like that, there will be about 6-7 sessions for the same user in Keycloak, 
+which seems acceptable.  
