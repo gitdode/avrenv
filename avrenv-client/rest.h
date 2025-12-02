@@ -33,13 +33,13 @@
 #define HEADER_BEARER_AUTH   "Authorization: Bearer "
 
 /* Token endpoint of the auth server */
-#define TOKEN_URL   "http://localhost:8090/realms/luniks/protocol/openid-connect/token"
+#define TOKEN_URL   "https://keycloak.luniks.net/realms/luniks/protocol/openid-connect/token"
 
 /* Format for direct access grant login request form data */
 #define TOKEN_REQ   "grant_type=password&client_id=public&username=%s&password=%s"
 
 /* REST endpoint to send data from receiver to */
-#define SERVER_URL  "http://localhost:8080/data"
+#define SERVER_URL  "https://baloon.luniks.net/data"
 
 /* Request object */
 typedef struct {

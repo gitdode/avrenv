@@ -111,6 +111,13 @@ int curl_post(const char *url, Request *req, Response *resp) {
             return (int)res;
         }
 
+        curl_easy_setopt(curl, CURLOPT_CA_CACHE_TIMEOUT, 604800L);
+        if (res != CURLE_OK) {
+            fprintf(stderr, "Caching CA cert bundle failed: %s\n",
+                    curl_easy_strerror(res));
+            return (int)res;
+        }
+
         res = curl_easy_setopt(curl, CURLOPT_TIMEOUT, POST_TIMEOUT);
         if (res != CURLE_OK) {
             fprintf(stderr, "Setting timeout failed: %s\n",
