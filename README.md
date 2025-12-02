@@ -27,3 +27,12 @@ look very good, so the PA1616S GPS module seems to do a good job.
 ![IMG_20251113_201312](https://github.com/user-attachments/assets/777dec69-9fb7-4a42-8252-c54466862766)
 
 The receiver currently has a display and logs the received measurements via USART to the PC.  
+
+The client program running on a PC is also written in C and reads the data via UART (to USB bridge) 
+from the serial port and converts it to Json. Then it gets an access token from the Keycloak server 
+and caches it in memory. The Json data is POSTed to the REST endpoint along with the token, while 
+the most recent data set is stored in memory, from where it can be concurrently read by the same 
+[Quarkus webapp](https://baloon.luniks.net) also serving the REST endpoint.  
+When the access token is about to expire, the client program simply gets a new one instead of 
+refreshing it. Like that, there will be always about 6-7 sessions for the same user in Keycloak, 
+which seems to be acceptable.  
