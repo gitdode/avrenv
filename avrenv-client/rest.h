@@ -33,13 +33,13 @@
 #define HEADER_BEARER_AUTH   "Authorization: Bearer "
 
 /* Token endpoint of the auth server */
-#define TOKEN_URL   "https://keycloak.luniks.net/realms/luniks/protocol/openid-connect/token"
+#define TOKEN_URL   "http://keycloak.luniks.net/realms/luniks/protocol/openid-connect/token"
 
 /* Format for direct access grant login request form data */
 #define TOKEN_REQ   "grant_type=password&client_id=public&username=%s&password=%s"
 
 /* REST endpoint to send data from receiver to */
-#define SERVER_URL  "https://baloon.luniks.net/data"
+#define SERVER_URL  "http://baloon.luniks.net/data"
 
 /* Request object */
 typedef struct {
@@ -94,16 +94,16 @@ void curl_cleanup(void);
 int curl_post(const char *url, Request *req, Response *resp);
 
 /**
- * Gets a token from the auth server and returns it updated on success 
- * or unchanged on failure.
+ * Gets an access token from the auth server and updates the given
+ * token on success.
  * 
  * Token.access should be freed after final use.
  *
  * @param username
  * @param password
- * @return updated or unchanged token
+ * @return HTTP response code
  */
-Token *get_token(char *username, char *password, Token *token);
+int get_token(char *username, char *password, Token *token);
 
 /**
  * Converts given data from receiver to a Json object and POSTs it
@@ -111,8 +111,8 @@ Token *get_token(char *username, char *password, Token *token);
  *
  * @param url server url
  * @param sessionid login session id
- * @param data Json data
+ * @param env EnvData
  */
-void post_data(const char *url, const char *sessionid, const char *data);
+void post_data(const char *url, const char *sessionid, EnvData *env);
 
 #endif /* REST_H */

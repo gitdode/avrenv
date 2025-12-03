@@ -111,12 +111,12 @@ int curl_post(const char *url, Request *req, Response *resp) {
             return (int)res;
         }
 
-        curl_easy_setopt(curl, CURLOPT_CA_CACHE_TIMEOUT, 604800L);
-        if (res != CURLE_OK) {
-            fprintf(stderr, "Caching CA cert bundle failed: %s\n",
-                    curl_easy_strerror(res));
-            return (int)res;
-        }
+//        curl_easy_setopt(curl, CURLOPT_CA_CACHE_TIMEOUT, 604800L);
+//        if (res != CURLE_OK) {
+//            fprintf(stderr, "Caching CA cert bundle failed: %s\n",
+//                    curl_easy_strerror(res));
+//            return (int)res;
+//        }
 
         res = curl_easy_setopt(curl, CURLOPT_TIMEOUT, POST_TIMEOUT);
         if (res != CURLE_OK) {
@@ -165,7 +165,7 @@ int curl_post(const char *url, Request *req, Response *resp) {
     return (int)res;
 }
 
-Token *get_token(char *username, char *password, Token *token) {
+int get_token(char *username, char *password, Token *token) {
     char form[256];
     snprintf(form, sizeof (form), TOKEN_REQ, username, password);
     Request req = {.data = form, .type = CONTENT_TYPE_FURL,
@@ -191,32 +191,23 @@ Token *get_token(char *username, char *password, Token *token) {
     free(resp.data);
     resp.data = NULL;
 
-    return token;
+    return (int)resp.code;
 }
 
-void post_data(const char *url, const char *token, const char *data) {
-    EnvData env = {0};
-
-    // -1 empty field from (ignored) newline
-    int fld = read_data(&env, data) - 1;
-    if (fld == FIELD_LEN) {
-        __attribute__ ((cleanup(json_cleanup))) json_object *json;
-        json = to_json(&env);
-        if (json) {
-            const char *jsonstr = json_object_to_json_string(json);
-            Request req = {.data = jsonstr, .type = CONTENT_TYPE_JSON,
-                           .access = token};
-            Response resp = {.code = 0, .data = NULL, .length = 0};
-            int res = curl_post(url, &req, &resp);
-            if (res == 0) {
-                printf("HTTP %ld\n", resp.code);
-                if (resp.data) puts(resp.data);
-            }
-            free(resp.data);
-            resp.data = NULL;
+void post_data(const char *url, const char *token, EnvData *env) {
+    __attribute__ ((cleanup(json_cleanup))) json_object *json;
+    json = to_json(env);
+    if (json) {
+        const char *jsonstr = json_object_to_json_string(json);
+        Request req = {.data = jsonstr, .type = CONTENT_TYPE_JSON,
+                       .access = token};
+        Response resp = {.code = 0, .data = NULL, .length = 0};
+        int res = curl_post(url, &req, &resp);
+        if (res == 0) {
+            printf("HTTP %ld\n", resp.code);
+            if (resp.data) puts(resp.data);
         }
-    } else {
-        printf("Unexpected number of data fields: %d (%d)\n",
-                fld, FIELD_LEN);
+        free(resp.data);
+        resp.data = NULL;
     }
 }

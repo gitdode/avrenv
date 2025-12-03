@@ -37,7 +37,7 @@ static Token token;
  */
 static void cleanup(int signo) {
     curl_cleanup();
-    free((void *)token.access);
+    free((void *) token.access);
     if (log) fclose(log);
 
     exit(EXIT_SUCCESS);
@@ -46,7 +46,7 @@ static void cleanup(int signo) {
 int main(int argc, char **argv) {
     if (argc != 5) {
         printf("Usage: %s <serial port> <log file> <username> <password>\n",
-               argv[0]);
+                argv[0]);
 
         return EXIT_SUCCESS;
     }
@@ -80,28 +80,38 @@ int main(int argc, char **argv) {
                 logfile);
     }
 
-    char buf[LINE_LEN] = {0};
-    int len, ret;
-    while ((len = serial_read(fd, buf, sizeof (buf))) > 0) {
-        printf("%s", buf);
-        ret = fprintf(log, "%s", buf);
-        if (ret < 0) {
-            error(0, errno,
-                    "Failed to write to log file '%s'",
-                    logfile);
-        }
-        fflush(log);
+    EnvData env = {0};
+    char data[LINE_LEN] = {0};
+    int len, ret, res = 0;
+    while ((len = serial_read(fd, data, sizeof (data))) > 0) {
+        // -1 empty field from (ignored) newline
+        int fld = read_data(&env, data) - 1;
+        if (fld == FIELD_LEN) {
+            printf("%s", data);
+            ret = fprintf(log, "%s", data);
+            if (ret < 0) {
+                error(0, errno,
+                        "Failed to write to log file '%s'",
+                        logfile);
+            }
+            fflush(log);
 
-        time_t now = time(NULL);
-        printf("Token expires in %ld s\n", token.exp - now);
-        if (token.exp - 30 < now) {
-            token = *get_token(username, password, &token);
+            time_t now = time(NULL);
+            printf("Token expires in %ld s\n", token.exp - now);
+            if (token.exp - 30 < now) {
+                res = get_token(username, password, &token);
+            }
+            if (res == 200) {
+                post_data(SERVER_URL, token.access, &env);
+            }
+        } else {
+            printf("Unexpected number of data fields: %d (%d)\n",
+                    fld, FIELD_LEN);
         }
-        post_data(SERVER_URL, token.access, buf);
     }
 
     curl_cleanup();
-    free((void *)token.access);
+    free((void *) token.access);
     ret = fclose(log);
     if (ret != 0) {
         error(EXIT_FAILURE, errno,
