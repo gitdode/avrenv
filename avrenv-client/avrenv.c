@@ -30,17 +30,19 @@ static FILE *log;
 /* Auth token */
 static Token token;
 
+/* Indicates a SIGINT */
+static bool sigint = false;
+
 /**
- * Clean up on CTRL+C before exiting.
+ * Initiates an orderly exit incl. full cleanup.
  *
  * @param signo signal number
  */
 static void cleanup(int signo) {
-    curl_cleanup();
-    free((void *) token.access);
-    if (log) fclose(log);
+    sigint = true;
+    puts("Gracefully stopping, please wait...");
 
-    exit(EXIT_SUCCESS);
+    return;
 }
 
 int main(int argc, char **argv) {
@@ -51,9 +53,8 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
 
-    if (signal(SIGINT, cleanup) == SIG_ERR) {
-        error(EXIT_FAILURE, errno, "Failed to set signal handler");
-    }
+    struct sigaction sig_handler = {.sa_handler = cleanup};
+    sigaction(SIGINT, &sig_handler, NULL);
 
     int cinit = curl_init();
     if (cinit) {
@@ -82,8 +83,10 @@ int main(int argc, char **argv) {
 
     EnvData env = {0};
     char data[LINE_LEN] = {0};
-    int len, ret, res = 0;
+    int len, ret, code = 0;
     while ((len = serial_read(fd, data, sizeof (data))) > 0) {
+        if (sigint) break;
+
         // -1 empty field from (ignored) newline
         int fld = read_data(&env, data) - 1;
         if (fld == FIELD_LEN) {
@@ -99,10 +102,12 @@ int main(int argc, char **argv) {
             time_t now = time(NULL);
             printf("Token expires in %ld s\n", token.exp - now);
             if (token.exp - 30 < now) {
-                res = get_token(username, password, &token);
+                code = get_token(username, password, &token);
+                printf("Get token: HTTP %d\n", code);
             }
-            if (res == 200) {
-                post_data(SERVER_URL, token.access, &env);
+            if (code == 200) {
+                code = post_data(SERVER_URL, token.access, &env);
+                printf("Send data: HTTP %d\n", code);
             }
         } else {
             printf("Unexpected number of data fields: %d (%d)\n",

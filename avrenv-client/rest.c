@@ -111,12 +111,12 @@ int curl_post(const char *url, Request *req, Response *resp) {
             return (int)res;
         }
 
-//        curl_easy_setopt(curl, CURLOPT_CA_CACHE_TIMEOUT, 604800L);
-//        if (res != CURLE_OK) {
-//            fprintf(stderr, "Caching CA cert bundle failed: %s\n",
-//                    curl_easy_strerror(res));
-//            return (int)res;
-//        }
+        curl_easy_setopt(curl, CURLOPT_CA_CACHE_TIMEOUT, 604800L);
+        if (res != CURLE_OK) {
+            fprintf(stderr, "Caching CA cert bundle failed: %s\n",
+                    curl_easy_strerror(res));
+            return (int)res;
+        }
 
         res = curl_easy_setopt(curl, CURLOPT_TIMEOUT, POST_TIMEOUT);
         if (res != CURLE_OK) {
@@ -194,9 +194,10 @@ int get_token(char *username, char *password, Token *token) {
     return (int)resp.code;
 }
 
-void post_data(const char *url, const char *token, EnvData *env) {
+int post_data(const char *url, const char *token, EnvData *env) {
     __attribute__ ((cleanup(json_cleanup))) json_object *json;
     json = to_json(env);
+    int code = 0;
     if (json) {
         const char *jsonstr = json_object_to_json_string(json);
         Request req = {.data = jsonstr, .type = CONTENT_TYPE_JSON,
@@ -204,10 +205,11 @@ void post_data(const char *url, const char *token, EnvData *env) {
         Response resp = {.code = 0, .data = NULL, .length = 0};
         int res = curl_post(url, &req, &resp);
         if (res == 0) {
-            printf("HTTP %ld\n", resp.code);
-            if (resp.data) puts(resp.data);
+            code = resp.code;
         }
         free(resp.data);
         resp.data = NULL;
     }
+
+    return code;
 }
