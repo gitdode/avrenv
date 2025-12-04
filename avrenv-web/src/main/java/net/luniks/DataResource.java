@@ -44,10 +44,11 @@ public class DataResource {
     private JsonObject convert(final JsonObject raw) {
         final DecimalFormat df = new DecimalFormat("0.0");
         df.setDecimalFormatSymbols(new DecimalFormatSymbols(Locale.ROOT));
-        final Duration duration = Duration.ofSeconds(raw.getInt("time", 0));
         
+        final Duration duration = Duration.ofSeconds(raw.getInt("time", 0));
         final String time = String.format("%02d:%02d:%02d", 
                 duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart());
+        
         final int dur = raw.getInt("dur", 0);
         final int rssi = -raw.getInt("rssi", 0);
         final int crc = raw.getInt("crc", 0);
@@ -64,7 +65,7 @@ public class DataResource {
         final int alt = raw.getInt("alt", 0);
         final String speed = df.format(raw.getInt("speed", 0) / 100f);
         
-        JsonObject converted = Json.createObjectBuilder()
+        final JsonObject converted = Json.createObjectBuilder()
                 .add("time", time)
                 .add("dur", dur)
                 .add("rssi", rssi)

@@ -30,30 +30,29 @@ static FILE *log;
 /* Auth token */
 static Token token;
 
+/* Indicates a SIGINT */
+static bool sigint = false;
+
 /**
- * Clean up on CTRL+C before exiting.
+ * Initiates an orderly exit incl. full cleanup.
  *
  * @param signo signal number
  */
 static void cleanup(int signo) {
-    curl_cleanup();
-    free((void *)token.access);
-    if (log) fclose(log);
-
-    exit(EXIT_SUCCESS);
+    sigint = true;
+    puts("Gracefully stopping, please wait...");
 }
 
 int main(int argc, char **argv) {
     if (argc != 5) {
         printf("Usage: %s <serial port> <log file> <username> <password>\n",
-               argv[0]);
+                argv[0]);
 
         return EXIT_SUCCESS;
     }
 
-    if (signal(SIGINT, cleanup) == SIG_ERR) {
-        error(EXIT_FAILURE, errno, "Failed to set signal handler");
-    }
+    struct sigaction sig_handler = {.sa_handler = cleanup};
+    sigaction(SIGINT, &sig_handler, NULL);
 
     int cinit = curl_init();
     if (cinit) {
@@ -80,24 +79,38 @@ int main(int argc, char **argv) {
                 logfile);
     }
 
-    char buf[LINE_LEN] = {0};
-    int len, ret;
-    while ((len = serial_read(fd, buf, sizeof (buf))) > 0) {
-        printf("%s", buf);
-        ret = fprintf(log, "%s", buf);
-        if (ret < 0) {
-            error(0, errno,
-                    "Failed to write to log file '%s'",
-                    logfile);
-        }
-        fflush(log);
+    EnvData env = {0};
+    char data[LINE_LEN] = {0};
+    int len, ret, code = 0;
+    while ((len = serial_read(fd, data, sizeof (data))) > 0) {
+        if (sigint) break;
 
-        time_t now = time(NULL);
-        printf("Token expires in %ld s\n", token.exp - now);
-        if (token.exp - 30 < now) {
-            token = *get_token(username, password, &token);
+        // -1 empty field from (ignored) newline
+        int fld = read_data(&env, data) - 1;
+        if (fld == FIELD_LEN) {
+            printf("%s", data);
+            ret = fprintf(log, "%s", data);
+            if (ret < 0) {
+                error(0, errno,
+                        "Failed to write to log file '%s'",
+                        logfile);
+            }
+            fflush(log);
+
+            time_t now = time(NULL);
+            printf("Token expires in %ld s\n", token.exp - now);
+            if (token.exp - 30 < now) {
+                code = get_token(username, password, &token);
+                printf("Get token: HTTP %d\n", code);
+            }
+            if (code == 200) {
+                code = post_data(SERVER_URL, token.access, &env);
+                printf("Send data: HTTP %d\n", code);
+            }
+        } else {
+            printf("Unexpected number of data fields: %d (%d)\n",
+                    fld, FIELD_LEN);
         }
-        post_data(SERVER_URL, token.access, buf);
     }
 
     curl_cleanup();
