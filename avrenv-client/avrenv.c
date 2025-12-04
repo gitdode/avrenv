@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
     }
 
     curl_cleanup();
-    free((void *) token.access);
+    free((void *)token.access);
     ret = fclose(log);
     if (ret != 0) {
         error(EXIT_FAILURE, errno,
