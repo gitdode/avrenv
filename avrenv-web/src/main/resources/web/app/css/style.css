@@ -28,6 +28,10 @@ td {
     height: 1.2em;
 }
 
+td.left {
+    text-align: left;
+}
+
 #container {
     width: 100%;
 }

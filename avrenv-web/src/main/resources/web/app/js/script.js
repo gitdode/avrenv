@@ -104,6 +104,14 @@ function update(center) {
  * @returns {void}
  */
 function ui(data, center) {
+    var online = data.online ? 'Yes' : 'No';
+    $('#online').text(online);
+    
+    // do nothing if baloon is not online
+    if (!online) {
+        return;
+    }
+    
     var crc = data.crc === 1 ? 'OK' : 'NOK';
     $('#crc').text(crc);
     

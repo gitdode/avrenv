@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Duration;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.annotation.security.RolesAllowed;
@@ -17,19 +18,46 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+/**
+ * Simple REST endpoint converting and storing the most recent dataset 
+ * POSTed to it in memory and returning it on GET.
+ * 
+ * @author torsten.roemer@luniks.net
+ */
 @Path("/data")
 public class DataResource {
+    
+    private static final long MAX_AGE = 8000;
     
     private static final JsonObject EMPTY_JSON = Json.createObjectBuilder().build();
     
     private final AtomicReference<JsonObject> current = new AtomicReference<>(EMPTY_JSON);
+    
+    private final AtomicLong lastUpdate = new AtomicLong();
 
+    /**
+     * Responds with the most recently POSTed dataset, adding one field 
+     * indicating if the baloon is online or not.
+     * 
+     * @return most recent dataset
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public JsonObject get() {
-        return current.get();
+        final boolean online = (System.currentTimeMillis() - lastUpdate.get()) < MAX_AGE;
+        final JsonObject local = Json.createObjectBuilder(current.get())
+                .add("online", online)
+                .build();
+        
+        return local;
     }
 
+    /**
+     * Converts the POSTed raw dataset and stores it in memory.
+     * 
+     * @param json raw dataset
+     * @return error text or html
+     */
     @POST
     @RolesAllowed("baloon")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -41,6 +69,12 @@ public class DataResource {
         return Response.ok().build();
     }
     
+    /**
+     * Converts the given raw dataset and returns it.
+     * 
+     * @param raw raw dataset
+     * @return converted dataset
+     */
     private JsonObject convert(final JsonObject raw) {
         final DecimalFormat df = new DecimalFormat("0.0");
         df.setDecimalFormatSymbols(new DecimalFormatSymbols(Locale.ROOT));
@@ -83,10 +117,19 @@ public class DataResource {
                 .add("alt", alt)
                 .add("speed", speed)
                 .build();
+        
+        lastUpdate.set(System.currentTimeMillis());
 
         return converted;
     }
     
+    /**
+     * Converts the given coordinate in integer degrees minutes * 1000000
+     * to decimal degrees.
+     * 
+     * @param degreesMinutes integer degrees minutes * 1000000
+     * @return decimal degrees
+     */
     final String toDecimalDegrees(final int degreesMinutes) {
         final int degrees = degreesMinutes / 1000000;
         final int minutes = degreesMinutes % 1000000;
