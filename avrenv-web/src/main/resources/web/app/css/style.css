@@ -32,6 +32,10 @@ td.left {
     text-align: left;
 }
 
+td.center {
+    text-align: center;
+}
+
 #container {
     width: 100%;
 }
