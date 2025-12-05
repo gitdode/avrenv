@@ -15,7 +15,7 @@ class DataResourceTest {
           .when().get("/data")
           .then()
              .statusCode(200)
-             .body(is("{}"));
+             .body(is("{\"online\":false}"));
     }
 
 }

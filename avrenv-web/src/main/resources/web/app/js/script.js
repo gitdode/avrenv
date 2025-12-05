@@ -108,7 +108,7 @@ function ui(data, center) {
     $('#online').text(online);
     
     // do nothing if baloon is not online
-    if (!online) {
+    if (!data.online) {
         return;
     }
     
