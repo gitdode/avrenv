@@ -85,7 +85,7 @@ function update(center) {
  * @returns {void}
  */
 function ui(data, center) {
-    var online = data.online ? 'Yes' : 'No';
+    var online = data.online ? 'Online 🎈' : 'Offline 🙄';
     $('#online').text(online);
     
     // do nothing if baloon is not online
