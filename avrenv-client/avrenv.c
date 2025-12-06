@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 
     EnvData env = {0};
     char data[LINE_LEN] = {0};
-    int len, ret, code = 0;
+    int len, ret, tcode = 0;
     while ((len = serial_read(fd, data, sizeof (data))) > 0) {
         if (sigint) break;
 
@@ -100,12 +100,12 @@ int main(int argc, char **argv) {
             time_t now = time(NULL);
             printf("Token expires in %ld s\n", token.exp - now);
             if (token.exp - 30 < now) {
-                code = get_token(username, password, &token);
-                printf("Get token: HTTP %d\n", code);
+                tcode = get_token(username, password, &token);
+                printf("Get token: HTTP %d\n", tcode);
             }
-            if (code == 200) {
-                code = post_data(SERVER_URL, token.access, &env);
-                printf("Send data: HTTP %d\n", code);
+            if (tcode == 200) {
+                int scode = post_data(SERVER_URL, token.access, &env);
+                printf("Send data: HTTP %d\n", scode);
             }
         } else {
             printf("Unexpected number of data fields: %d (%d)\n",

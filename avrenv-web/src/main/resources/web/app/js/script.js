@@ -21,19 +21,15 @@ var intId = 0;
  * "Initialization" done when the document is "ready".
  */
 $(document).ready(function () {
-    $('#update').on('click', data);
-    $('#auto').on('click', auto);
     $('#center').on('click', center);
-
-    $('#auto').prop('checked', false);
-
+    
     map.setView([lat, lon], zoom);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
     
-    update(true);
+    window.setInterval(data, 3000);
 });
 
 /**
@@ -55,20 +51,6 @@ function center() {
 }
 
 /**
- * Sets or clears auto update when the checkbox was checked or unchecked, 
- * respectively.
- * 
- * @returns {void}
- */
-function auto() {
-    if ($('#auto').is(':checked')) {
-        intId = window.setInterval(data, 3000);
-    } else {
-        window.clearInterval(intId);
-    }
-}
-
-/**
  * Gets the current data set from the service and updates the table and 
  * the map marker to the current position, and centers the map if given
  * argument is true.
@@ -80,15 +62,14 @@ function update(center) {
     $.ajax({
         url: '/data',
         type: 'get',
-        // dataType : 'text',
         cache: false,
         contentType: false,
         processData: false,
         success: function (data) {
             ui(data, center);
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log('Getting data failed: ' + thrownError);
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('Getting data failed');
         }
     });
 

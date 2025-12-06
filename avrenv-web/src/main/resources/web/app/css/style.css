@@ -58,19 +58,13 @@ td.center {
 }
 
 #controls {
-    margin-left: 1%;
     margin-top: 3%;
-    margin-right: 1%;
-    margin-bottom: 1%;
-    width: 98%;
+    width: 100%;
 }
 
 #info {
-    margin-left: 1%;
     margin-top: 3%;
-    margin-right: 1%;
-    margin-bottom: 1%;
-    width: 98%;
+    width: 100%;
 }
 
 .desc {
