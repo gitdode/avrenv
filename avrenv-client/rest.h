@@ -36,7 +36,7 @@
 #define TOKEN_URL   "https://keycloak.luniks.net/realms/luniks/protocol/openid-connect/token"
 
 /* Format for direct access grant login request form data */
-#define TOKEN_REQ   "grant_type=password&client_id=public&username=%s&password=%s"
+#define TOKEN_REQ   "grant_type=password&client_id=luniks&client_secret=%s&username=%s&password=%s"
 
 /* REST endpoint to send data from receiver to */
 #define SERVER_URL  "https://baloon.luniks.net/data"
@@ -99,21 +99,24 @@ int curl_post(const char *url, Request *req, Response *resp);
  * 
  * Token.access should be freed after final use.
  *
+ * @param url token endpoint
+ * @param secret client secret
  * @param username
  * @param password
  * @return HTTP response code
  */
-int get_token(char *username, char *password, Token *token);
+int get_token(const char *url, const char *secret, 
+        const char *username, const char *password, Token *token);
 
 /**
  * Converts given data from receiver to a Json object and POSTs it
  * to the given URL.
  *
  * @param url server url
- * @param sessionid login session id
+ * @param token access token
  * @param env EnvData
  * @return HTTP response code
  */
-int post_data(const char *url, const char *sessionid, EnvData *env);
+int post_data(const char *url, const char *token, EnvData *env);
 
 #endif /* REST_H */

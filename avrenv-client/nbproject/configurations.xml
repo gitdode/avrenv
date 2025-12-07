@@ -4,7 +4,9 @@
     <df root="/home/dode/dev/avrenv/avrenv-client" name="0">
       <in>avrenv.c</in>
       <in>data.c</in>
+      <in>data_test.c</in>
       <in>rest.c</in>
+      <in>rest_test.c</in>
       <in>serial.c</in>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -64,6 +66,11 @@
         <cTool flags="0">
         </cTool>
       </item>
+      <item path="/home/dode/dev/avrenv/avrenv-client/data_test.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="/home/dode/dev/avrenv/avrenv-client/rest.c"
             ex="false"
             tool="0"
@@ -77,6 +84,8 @@
             flavor2="0">
         <cTool flags="0">
         </cTool>
+      </item>
+      <item path="rest_test.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
   </confs>

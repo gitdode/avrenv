@@ -9,3 +9,5 @@
 /avrenv-rx/nbproject/private/
 /avrenv-client/nbproject/private/
 /avrenv-client/avrenv
+/avrenv-client/avrenv-tests
+/avrenv-client/testcases.c
