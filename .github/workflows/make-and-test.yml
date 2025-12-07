@@ -1,6 +1,7 @@
 name: make-and-test
 
 on:
+  workflow_dispatch:
   push:
     branches: main
     paths: 'avrenv'
@@ -14,11 +15,15 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+    
     - name: Build avrenv-tx
       run: cd $GITHUB_WORKSPACE/avrenv-tx && make
+      
     - name: Build avrenv-rx
       run: cd $GITHUB_WORKSPACE/avrenv-rx && make
+      
     - name: Build avrenv-client
       run: cd $GITHUB_WORKSPACE/avrenv-client && make
+      
     - name: Build avrenv-web
       run: cd $GITHUB_WORKSPACE/avrenv-tx && ./mvnw clean package
