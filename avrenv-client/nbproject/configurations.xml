@@ -4,6 +4,7 @@
     <df root="/home/dode/dev/avrenv/avrenv-client" name="0">
       <in>avrenv.c</in>
       <in>data.c</in>
+      <in>data_test.c</in>
       <in>rest.c</in>
       <in>serial.c</in>
     </df>
@@ -77,6 +78,8 @@
             flavor2="0">
         <cTool flags="0">
         </cTool>
+      </item>
+      <item path="data_test.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
   </confs>
