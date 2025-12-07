@@ -1,4 +1,4 @@
-name: make
+name: make-and-test
 
 on:
   push:
