@@ -165,13 +165,14 @@ int curl_post(const char *url, Request *req, Response *resp) {
     return (int)res;
 }
 
-int get_token(char *username, char *password, Token *token) {
+int get_token(const char *url, const char *secret,
+        const char *username, const char *password, Token *token) {
     char form[256];
-    snprintf(form, sizeof (form), TOKEN_REQ, username, password);
+    snprintf(form, sizeof (form), TOKEN_REQ, secret, username, password);
     Request req = {.data = form, .type = CONTENT_TYPE_FURL,
                    .access = NULL};
     Response resp = {.code = 0, .data = NULL, .length = 0};
-    int res = curl_post(TOKEN_URL, &req, &resp);
+    int res = curl_post(url, &req, &resp);
     if (res == 0) {
         if (resp.code == 200) {
             __attribute__ ((cleanup(json_cleanup))) json_object *json;

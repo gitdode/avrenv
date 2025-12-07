@@ -44,8 +44,9 @@ static void cleanup(int signo) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 5) {
-        printf("Usage: %s <serial port> <log file> <username> <password>\n",
+    if (argc != 6) {
+        printf("Usage: %s <serial port> <log file> "
+                "<secret> <username> <password>\n",
                 argv[0]);
 
         return EXIT_SUCCESS;
@@ -61,8 +62,9 @@ int main(int argc, char **argv) {
 
     char *devfile = argv[1];
     char *logfile = argv[2];
-    char *username = argv[3];
-    char *password = argv[4];
+    char *secret = argv[3];
+    char *username = argv[4];
+    char *password = argv[5];
 
     int fd = serial_open(devfile);
     if (fd == -1) {
@@ -100,7 +102,7 @@ int main(int argc, char **argv) {
             time_t now = time(NULL);
             printf("Token expires in %ld s\n", token.exp - now);
             if (token.exp - 30 < now) {
-                tcode = get_token(username, password, &token);
+                tcode = get_token(TOKEN_URL, secret, username, password, &token);
                 printf("Get token: HTTP %d\n", tcode);
             }
             if (tcode == 200) {

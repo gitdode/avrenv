@@ -2,11 +2,11 @@
 
 MAIN = avrenv.c
 SRC = serial.c data.c rest.c
-TESTSRC = $(SRC) data_test.c
+TESTSRC = $(SRC) data_test.c rest_test.c
 TESTCASES = testcases.c
 HEADER = serial.h data.h rest.h Makefile
 OBJ = serial.o data.o rest.o
-TESTOBJ = data_test.o
+TESTOBJ = data_test.o rest_test.o
 
 CC  = gcc
 OBJDUMP = objdump
@@ -30,7 +30,8 @@ test: $(TEST_TARGET)
 	./$^
 	
 $(TEST_TARGET): $(TESTCASES)
-	$(CC) $(CFLAGS) $(OBJ) $(TESTOBJ) $(TESTCASES) $(LIBS) $(ACEUNIT_LIB) -o $@
+	$(CC) $(CFLAGS) $(OBJ) $(TESTOBJ) $(TESTCASES) \
+	$(LIBS) $(ACEUNIT_LIB) -o $@
 	
 $(TESTCASES): $(TESTOBJ)
 	$(ACEUNIT) $(TESTOBJ) > $@
