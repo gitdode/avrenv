@@ -38,14 +38,9 @@ measurements via USART to the PC. Very simple.
 
 ### Client
 
-The client program running on a Debian PC is also written in C and reads the data via UART (to USB bridge) 
-from the serial port and converts it to Json using `json-c`. Then it gets an access token from the Keycloak 
-server and caches it in memory. The Json data is POSTed to the REST endpoint along with the token using `libcurl`, 
-while the most recent data set is stored in memory, from where it can be concurrently read by the same 
-[Quarkus web app](https://baloon.luniks.net) serving the REST endpoint.  
-When the access token is about to expire, the client program simply gets a new one instead of 
-refreshing it. Like that, there will be always about 6-7 sessions for the same user in Keycloak, 
-which seems acceptable.  
+The client program running on a Debian PC reads the data from the receiver via the serial port and converts 
+it to Json using `json-c`. Then it gets an access token from the Keycloak server and POSTs the Json data 
+along with the token using `libcurl` to the [Quarkus web app](https://baloon.luniks.net).  
 
 ### Web Application
 
