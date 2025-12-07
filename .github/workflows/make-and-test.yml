@@ -1,0 +1,24 @@
+name: make
+
+on:
+  push:
+    branches: main
+    paths: 'avrenv'
+  pull_request:
+    branches: main
+    paths: 'avrenv'
+
+jobs:
+  build:
+    runs-on: self-hosted
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build avrenv-tx
+      run: cd $GITHUB_WORKSPACE/avrenv-tx && make
+    - name: Build avrenv-rx
+      run: cd $GITHUB_WORKSPACE/avrenv-rx && make
+    - name: Build avrenv-client
+      run: cd $GITHUB_WORKSPACE/avrenv-client && make
+    - name: Build avrenv-web
+      run: cd $GITHUB_WORKSPACE/avrenv-tx && ./mvnw clean package
