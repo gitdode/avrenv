@@ -21,7 +21,7 @@ class DataResourceTest {
 
     private static final String OIDC_USERNAME = "envtest";
     private static final String OIDC_PASSWORD = "password";
-    private static final String OIDC_CLIENT = "quarkus-app";
+    private static final String OIDC_CLIENT = "luniks";
     private static final String OIDC_SECRET = "secret";
 
     private final OidcTestClient testClient = new OidcTestClient();
