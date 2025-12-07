@@ -47,4 +47,4 @@ size:  $(TARGET)
 	$(SIZE) $(TARGET)
 
 clean:
-	rm -f *.o $(TARGET) $(TARGET).lst
+	rm -f $(TESTCASES) *.o $(TARGET) $(TARGET).lst $(TEST_TARGET)
