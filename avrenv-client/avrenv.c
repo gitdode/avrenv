@@ -55,16 +55,16 @@ int main(int argc, char **argv) {
     struct sigaction sig_handler = {.sa_handler = cleanup};
     sigaction(SIGINT, &sig_handler, NULL);
 
-    int cinit = curl_init();
-    if (cinit) {
-        return EXIT_FAILURE;
-    }
-
     char *devfile = argv[1];
     char *logfile = argv[2];
     char *secret = argv[3];
     char *username = argv[4];
     char *password = argv[5];
+
+    int cinit = curl_init();
+    if (cinit) {
+        return EXIT_FAILURE;
+    }
 
     int fd = serial_open(devfile);
     if (fd == -1) {

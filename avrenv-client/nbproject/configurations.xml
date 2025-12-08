@@ -78,14 +78,17 @@
         <cTool flags="0">
         </cTool>
       </item>
+      <item path="/home/dode/dev/avrenv/avrenv-client/rest_test.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="/home/dode/dev/avrenv/avrenv-client/serial.c"
             ex="false"
             tool="0"
             flavor2="0">
         <cTool flags="0">
         </cTool>
-      </item>
-      <item path="rest_test.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
   </confs>
