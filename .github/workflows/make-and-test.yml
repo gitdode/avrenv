@@ -8,20 +8,51 @@ on:
     branches: main
 
 jobs:
+  libs:
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        repository: gitdode/libsdc
+        path: libsdc
+
+    - uses: actions/checkout@v6
+      with:
+        repository: gitdode/librfm69
+        path: librfm69
+
+    - uses: actions/checkout@v6
+      with:
+        repository: gitdode/libtft
+        path: libtft
+
+    - name: Make libsdc
+      run: cd libsdc && make clean && make all
+
+    - name: Make librfm69
+      run: cd librfm69 && make clean && make all
+
+    - name: Make libtft
+      run: cd libtft && make clean && make all
+
   build:
     runs-on: self-hosted
-    
+    needs: libs
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Build avrenv-tx
-      run: cd $GITHUB_WORKSPACE/avrenv-tx && make clean && make
-      
-    - name: Build avrenv-rx
-      run: cd $GITHUB_WORKSPACE/avrenv-rx && make clean && make
-      
-    - name: Build avrenv-client
-      run: cd $GITHUB_WORKSPACE/avrenv-client && make clean && make
-      
+    - uses: actions/checkout@v6
+      with:
+        path: avrenv
+
+    - name: Make avrenv-tx
+      run: cd avrenv/avrenv-tx && make clean && make
+
+    - name: Make avrenv-rx
+      run: cd avrenv/avrenv-rx && make clean && make
+
+    - name: Make avrenv-client
+      run: cd avrenv/avrenv-client && make clean && make
+
     - name: Build avrenv-web
-      run: cd $GITHUB_WORKSPACE/avrenv-web && ./mvnw clean package
+      run: cd avrenv/avrenv-web && ./mvnw clean package
