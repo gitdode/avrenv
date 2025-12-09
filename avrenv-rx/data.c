@@ -100,7 +100,7 @@ void receiveData(void) {
 #if LORA
      RxFlags flags = rfmLoRaRxDone();
 #else
-     PayloadFlags flags = rfmPayloadReady();
+     RxFlags flags = rfmPayloadReady();
 #endif
     if (flags.ready) {
         uint8_t dur = min(UCHAR_MAX, pitints - rxtstart);

@@ -47,7 +47,7 @@ CFLAGS += -std=gnu99
 
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c
-SRC += ../../librfm69/librfm69.a ../../libtft/libtft.a
+SRC += ../../librfm95/librfm95.a ../../libtft/libtft.a
 
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)

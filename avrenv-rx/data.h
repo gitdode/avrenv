@@ -15,7 +15,7 @@
 #include "utils.h"
 #include "usart.h"
 #include "spi.h"
-#include "librfm69/librfm69.h"
+#include "librfm95/librfm95.h"
 #include "libtft/libtft.h"
 #include "libtft/unifont.h"
 
