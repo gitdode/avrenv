@@ -8,7 +8,7 @@ BAUD = 9600
 PROGRAMMER_TYPE = atmelice_updi
 PROGRAMMER_ARGS = -B 125kHz
 
-LORA = 0
+LORA = 1
 
 # Display dimensions
 DISPLAY_WIDTH = 320
@@ -23,6 +23,7 @@ VFLIP = true
 
 MAIN = avrenv.c
 SRC = data.c rfm.c spi.c tft.c usart.c utils.c
+LIB = -lrfm95 -ltft
 
 CC = avr-gcc
 OBJCOPY = avr-objcopy
@@ -36,7 +37,7 @@ CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUDRATE=$(BAUD)
 CFLAGS += -DLORA=$(LORA)
 CFLAGS += -DDISPLAY_WIDTH=$(DISPLAY_WIDTH) -DDISPLAY_HEIGHT=$(DISPLAY_HEIGHT)
 CFLAGS += -DINVERT=$(INVERT) -DBGR=$(BGR) -DHFLIP=$(HFLIP) -DVFLIP=$(VFLIP)
-CFLAGS += -O2 -I. -I../../
+CFLAGS += -O2 -I. -I/usr/local/include/dode -L/usr/local/lib/dode
 CFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums 
 CFLAGS += -Wall -Wstrict-prototypes
 CFLAGS += -g -ggdb
@@ -47,7 +48,6 @@ CFLAGS += -std=gnu99
 
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c
-SRC += ../../librfm95/librfm95.a ../../libtft/libtft.a
 
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)
@@ -60,7 +60,7 @@ all: $(TARGET).hex
 	$(OBJCOPY) -R .eeprom -O ihex $< $@
 
 %.elf: $(SRC)
-	$(CC) $(CFLAGS) $(SRC) --output $@ 
+	$(CC) $(CFLAGS) $(SRC) $(LIB) --output $@
 
 disasm: $(TARGET).lst
 

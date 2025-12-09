@@ -8,11 +8,12 @@ BAUD = 9600
 PROGRAMMER_TYPE = atmelice_updi
 PROGRAMMER_ARGS = -B 125kHz
 
-LORA = 0
+LORA = 1
 
 MAIN = avrenv.c
 SRC = data.c rfm.c sdc.c spi.c i2c.c usart.c utils.c bme68x/bme68x.c \
 	bme688.c ens160.c pa1616s.c
+LIB = -lrfm95 -lsdc
 
 CC = avr-gcc
 OBJCOPY = avr-objcopy
@@ -24,7 +25,7 @@ AVRDUDE = avrdude
 # CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUD=$(BAUD)
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUDRATE=$(BAUD)
 CFLAGS += -DLORA=$(LORA)
-CFLAGS += -O2 -I. -I../../
+CFLAGS += -O2 -I. -I/usr/local/include/dode -L/usr/local/lib/dode
 CFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums 
 CFLAGS += -Wall -Wstrict-prototypes
 CFLAGS += -g -ggdb
@@ -35,8 +36,6 @@ CFLAGS += -std=gnu99
 
 TARGET = $(strip $(basename $(MAIN)))
 SRC += $(TARGET).c
-SRC += ../../librfm69/librfm69.a
-SRC += ../../libsdc/libsdc.a
 
 OBJ = $(SRC:.c=.o)
 OBJ = $(SRC:.S=.o)
@@ -50,7 +49,7 @@ all: $(TARGET).hex
 	$(OBJCOPY) -R .eeprom -O ihex $< $@
 
 %.elf: $(SRC)
-	$(CC) $(CFLAGS) $(SRC) --output $@ 
+	$(CC) $(CFLAGS) $(SRC) $(LIB) --output $@
 
 disasm: $(TARGET).lst
 

@@ -7,7 +7,7 @@
 
 #include <util/delay.h>
 
-#include "libsdc/libsdc.h"
+#include "libsdc.h"
 #include "pins.h"
 #include "spi.h"
 
