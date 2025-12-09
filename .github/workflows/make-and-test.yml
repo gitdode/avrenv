@@ -8,37 +8,8 @@ on:
     branches: main
 
 jobs:
-  libs:
+  make:
     runs-on: self-hosted
-
-    steps:
-    - uses: actions/checkout@v6
-      with:
-        repository: gitdode/libsdc
-        path: libsdc
-
-    - uses: actions/checkout@v6
-      with:
-        repository: gitdode/librfm69
-        path: librfm69
-
-    - uses: actions/checkout@v6
-      with:
-        repository: gitdode/libtft
-        path: libtft
-
-    - name: Make libsdc
-      run: cd libsdc && make clean && make all
-
-    - name: Make librfm69
-      run: cd librfm69 && make clean && make all
-
-    - name: Make libtft
-      run: cd libtft && make clean && make all
-
-  build:
-    runs-on: self-hosted
-    needs: libs
 
     steps:
     - uses: actions/checkout@v6
@@ -55,4 +26,15 @@ jobs:
       run: cd avrenv/avrenv-client && make clean && make
 
     - name: Build avrenv-web
-      run: cd avrenv/avrenv-web && ./mvnw clean package
+      run: cd avrenv/avrenv-web && ./mvnw clean package -DskipTests
+
+  test:
+    runs-on: self-hosted
+    needs: make
+
+    steps:
+    # - name: Test avrenv-client
+    #   run: cd avrenv/avrenv-client && make test
+
+    - name: Test avrenv-web
+      run: cd avrenv/avrenv-web && ./mvnw test
