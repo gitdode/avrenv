@@ -19,8 +19,8 @@
 #include "bme688.h"
 #include "ens160.h"
 #include "pa1616s.h"
-#include "librfm69/librfm69.h"
-#include "libsdc/libsdc.h"
+#include "librfm95.h"
+#include "libsdc.h"
 
 /* Battery low threshold */
 #define BAT_LOW_MV  2400

@@ -105,6 +105,13 @@
             tool="0"
             flavor2="0">
       </item>
+      <folder path="0">
+        <cTool>
+          <incDir>
+            <pElem>/usr/local/include/dode</pElem>
+          </incDir>
+        </cTool>
+      </folder>
     </conf>
   </confs>
 </configurationDescriptor>

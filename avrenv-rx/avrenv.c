@@ -154,7 +154,7 @@ int main(void) {
     spiMid();
 
     bool radio = false;
-    radio = rfmInit(433600, 0x24, 0x84);
+    radio = rfmInit(433600, 0x24, 0x84, LORA);
     if (radio) {
         rfmSetOutputPower(2);
     } else if (USART) {

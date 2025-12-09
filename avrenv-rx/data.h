@@ -15,9 +15,9 @@
 #include "utils.h"
 #include "usart.h"
 #include "spi.h"
-#include "librfm69/librfm69.h"
-#include "libtft/libtft.h"
-#include "libtft/unifont.h"
+#include "librfm95.h"
+#include "libtft.h"
+#include "unifont.h"
 
 /* Expected length of payload from transmitter */
 #define PAYLOAD_LEN 24

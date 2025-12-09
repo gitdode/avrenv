@@ -303,7 +303,7 @@ int main(void) {
     // slow down SPI for the breadboard wiring
     spiMid();
 
-    bool radio = rfmInit(FREQUENCY, NODE_ADDR, CAST_ADDR);
+    bool radio = rfmInit(FREQUENCY, NODE_ADDR, CAST_ADDR, LORA);
     if (radio) {
         rfmSetOutputPower(2);
     } else if (USART) {
