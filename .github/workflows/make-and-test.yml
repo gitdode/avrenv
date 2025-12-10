@@ -28,7 +28,7 @@ jobs:
     - name: Build avrenv-web
       run: cd avrenv/avrenv-web && ./mvnw clean package -DskipTests
 
-  test:
+  test-service:
     runs-on: self-hosted
     needs: make
 
@@ -36,5 +36,10 @@ jobs:
     - name: Test avrenv-web
       run: cd avrenv/avrenv-web && ./mvnw test
 
+  test-client:
+    runs-on: self-hosted
+    needs: test-service
+
+    steps:
     - name: Test avrenv-client
       run: cd avrenv/avrenv-client && ./test.sh
