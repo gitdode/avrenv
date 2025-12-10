@@ -56,7 +56,7 @@
             <Elem>BAUD=9600</Elem>
             <Elem>BAUDRATE=9600</Elem>
             <Elem>F_CPU=10000000UL</Elem>
-            <Elem>RFM=69</Elem>
+            <Elem>LORA=1</Elem>
             <Elem>__AVR_AVR64EA28__</Elem>
             <Elem>__flash=volatile</Elem>
           </preprocessorList>

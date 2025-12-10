@@ -75,51 +75,51 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/avrenv-tx: ${OBJECTFILES}
 
 ${OBJECTDIR}/_ext/7eff1f7e/avrenv.o: /home/dode/dev/avrenv/avrenv-tx/avrenv.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -std=c99 -o ${OBJECTDIR}/_ext/7eff1f7e/avrenv.o /home/dode/dev/avrenv/avrenv-tx/avrenv.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -std=c99 -o ${OBJECTDIR}/_ext/7eff1f7e/avrenv.o /home/dode/dev/avrenv/avrenv-tx/avrenv.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/bme688.o: /home/dode/dev/avrenv/avrenv-tx/bme688.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/bme688.o /home/dode/dev/avrenv/avrenv-tx/bme688.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/bme688.o /home/dode/dev/avrenv/avrenv-tx/bme688.c
 
 ${OBJECTDIR}/_ext/3d12a1ed/bme68x.o: /home/dode/dev/avrenv/avrenv-tx/bme68x/bme68x.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/3d12a1ed
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/3d12a1ed/bme68x.o /home/dode/dev/avrenv/avrenv-tx/bme68x/bme68x.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/3d12a1ed/bme68x.o /home/dode/dev/avrenv/avrenv-tx/bme68x/bme68x.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/data.o: /home/dode/dev/avrenv/avrenv-tx/data.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/data.o /home/dode/dev/avrenv/avrenv-tx/data.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/data.o /home/dode/dev/avrenv/avrenv-tx/data.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/ens160.o: /home/dode/dev/avrenv/avrenv-tx/ens160.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/ens160.o /home/dode/dev/avrenv/avrenv-tx/ens160.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/ens160.o /home/dode/dev/avrenv/avrenv-tx/ens160.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/i2c.o: /home/dode/dev/avrenv/avrenv-tx/i2c.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/i2c.o /home/dode/dev/avrenv/avrenv-tx/i2c.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/i2c.o /home/dode/dev/avrenv/avrenv-tx/i2c.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/pa1616s.o: /home/dode/dev/avrenv/avrenv-tx/pa1616s.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/pa1616s.o /home/dode/dev/avrenv/avrenv-tx/pa1616s.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/pa1616s.o /home/dode/dev/avrenv/avrenv-tx/pa1616s.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/rfm.o: /home/dode/dev/avrenv/avrenv-tx/rfm.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/rfm.o /home/dode/dev/avrenv/avrenv-tx/rfm.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/rfm.o /home/dode/dev/avrenv/avrenv-tx/rfm.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/sdc.o: /home/dode/dev/avrenv/avrenv-tx/sdc.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/sdc.o /home/dode/dev/avrenv/avrenv-tx/sdc.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/sdc.o /home/dode/dev/avrenv/avrenv-tx/sdc.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/spi.o: /home/dode/dev/avrenv/avrenv-tx/spi.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/spi.o /home/dode/dev/avrenv/avrenv-tx/spi.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/spi.o /home/dode/dev/avrenv/avrenv-tx/spi.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/usart.o: /home/dode/dev/avrenv/avrenv-tx/usart.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/usart.o /home/dode/dev/avrenv/avrenv-tx/usart.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/usart.o /home/dode/dev/avrenv/avrenv-tx/usart.c
 
 ${OBJECTDIR}/_ext/7eff1f7e/utils.o: /home/dode/dev/avrenv/avrenv-tx/utils.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/7eff1f7e
-	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DRFM=69 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/utils.o /home/dode/dev/avrenv/avrenv-tx/utils.c
+	$(COMPILE.c) -g -DBAUD=9600 -DBAUDRATE=9600 -DF_CPU=10000000UL -DLORA=1 -D__AVR_AVR64EA28__ -D__flash=volatile -I. -I/home/dode/dev -I/usr/local/include/dode -o ${OBJECTDIR}/_ext/7eff1f7e/utils.o /home/dode/dev/avrenv/avrenv-tx/utils.c
 
 # Subprojects
 .build-subprojects:

@@ -48,7 +48,7 @@
             <Elem>F_CPU=10000000UL</Elem>
             <Elem>HFLIP=1</Elem>
             <Elem>INVERT=0</Elem>
-            <Elem>RFM=69</Elem>
+            <Elem>LORA=1</Elem>
             <Elem>VFLIP=1</Elem>
             <Elem>__AVR_AVR64EA28__</Elem>
             <Elem>__flash=volatile</Elem>
