@@ -20,9 +20,9 @@ while ([[ $(curl -o /dev/null -s -w "%{http_code}\n" $url) != 200 ]]); do
     sleep 1;
     ((time=$time+1))
     if [[ $time -gt 60 ]]; then
-	 echo "Timeout waiting for service to be up"
-	 kill $pid
-         exit 1
+        echo "Timeout waiting for service to be up"
+        kill $pid
+        exit 1
     fi
 done
 
@@ -31,12 +31,6 @@ cd "$workdir"
 make test; test=$?
 
 kill $pid
-
-if [[ $test != 0 ]]; then
-    cat "$srvdir/nohup.out"
-fi
-
-rm "$srvdir/nohup.out"
 
 exit $test
 
