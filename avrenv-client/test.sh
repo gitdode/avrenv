@@ -28,9 +28,13 @@ done
 
 cd "$workdir"
 
-make test; test=$?
+set +e
+
+make test
+test=$?
+
+set -e
 
 kill $pid
 
 exit $test
-
