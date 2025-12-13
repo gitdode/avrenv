@@ -5,7 +5,7 @@ set -o pipefail
 
 workdir=$(realpath $(dirname "$0"))
 srvdir="$workdir/../avrenv-web"
-command="nohup ./mvnw quarkus:dev"
+command="./mvnw quarkus:dev"
 url="http://localhost:8080/data"
 
 cd "$srvdir"
