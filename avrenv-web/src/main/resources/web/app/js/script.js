@@ -101,7 +101,7 @@ function ui(data, center) {
         return;
     }
     
-    var fix = data.fix !== 0 ? 'Yes' : 'No';
+    var fix = data.fix === 0 ? 'No' : 'Yes';
 
     $('#time').text(data.time);
     $('#dur').text(data.dur);
@@ -121,7 +121,7 @@ function ui(data, center) {
     $('#speed').text(data.speed);
 
     // only update map if GPS module has a satellite fix
-    if (data.fix === 1) {
+    if (data.fix === 1 || data.fix === 2) {
         if (center) {
             zoom = map.getZoom();
             map.setView([data.lat, data.lon], zoom);
