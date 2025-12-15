@@ -186,7 +186,7 @@ int get_token(const char *url, const char *secret,
             time_t now = time(NULL);
             token->exp = (time_t)json_object_get_uint64(jexpires) + now;
         } else {
-            puts(resp.data);
+            fprintf(stderr, "%s\n", resp.data);
         }
     }
     free(resp.data);
@@ -207,6 +207,9 @@ int post_data(const char *url, const char *token, EnvData *env) {
         int res = curl_post(url, &req, &resp);
         if (res == 0) {
             code = resp.code;
+            if (resp.code != 200) {
+                fprintf(stderr, "%s\n", resp.data);
+            }
         }
         free(resp.data);
         resp.data = NULL;
