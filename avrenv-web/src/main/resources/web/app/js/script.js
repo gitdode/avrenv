@@ -101,7 +101,7 @@ function ui(data, center) {
         return;
     }
     
-    var fix = data.fix === 0 ? 'No' : 'Yes';
+    var fix = data.fix === 1 || data.fix === 2 ? 'Yes' : 'No';
 
     $('#time').text(data.time);
     $('#dur').text(data.dur);
