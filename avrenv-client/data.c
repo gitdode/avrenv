@@ -114,6 +114,11 @@ json_object* to_json(EnvData *data) {
 
 int read_data(EnvData *data, const char *line) {
     char *copy = strdup(line);
+    if (copy == NULL) {
+        error(EXIT_FAILURE, errno,
+                "Insufficient memory to copy line of data");
+    }
+    
     char *freeme = copy;
     char *token;
     int i = 0;
