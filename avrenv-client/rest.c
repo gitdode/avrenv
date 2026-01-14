@@ -7,6 +7,8 @@
  *
  * Created on 26.11.2025, 00:00
  */
+ 
+#include <errno.h>
 
 #include "rest.h"
 
@@ -81,9 +83,9 @@ static size_t writer(char *data, size_t size, size_t nmemb, void *respptr) {
 }
 
 int curl_post(const char *url, Request *req, Response *resp) {
-    __attribute__ ((cleanup(free_slist))) struct curl_slist *chunk = NULL;
-    __attribute__ ((cleanup(easy_cleanup))) CURL *curl;
-    __attribute__ ((cleanup(free_auth))) char *auth = NULL;
+    struct curl_slist __attribute__ ((cleanup(free_slist))) *chunk = NULL;
+    CURL *curl __attribute__ ((cleanup(easy_cleanup)));
+    char *auth __attribute__ ((cleanup(free_auth))) = NULL;
     static CURLcode res;
 
     curl = curl_easy_init();
@@ -175,7 +177,7 @@ int get_token(const char *url, const char *secret,
     int res = curl_post(url, &req, &resp);
     if (res == 0) {
         if (resp.code == 200) {
-            __attribute__ ((cleanup(json_cleanup))) json_object *json;
+            json_object *json __attribute__ ((cleanup(json_cleanup)));
             json = json_tokener_parse(resp.data);
             json_object *jaccess = json_object_object_get(json, "access_token");
             const char *iaccess = json_object_get_string(jaccess);
@@ -196,7 +198,7 @@ int get_token(const char *url, const char *secret,
 }
 
 int post_data(const char *url, const char *token, EnvData *env) {
-    __attribute__ ((cleanup(json_cleanup))) json_object *json;
+    json_object *json __attribute__ ((cleanup(json_cleanup)));
     json = to_json(env);
     int code = 0;
     if (json) {

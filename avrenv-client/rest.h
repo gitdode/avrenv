@@ -13,7 +13,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
-#include <errno.h>
 #include <error.h>
 
 #include <curl/curl.h>

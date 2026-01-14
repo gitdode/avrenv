@@ -5,6 +5,9 @@
  * Created on 21.11.2025, 20:24
  */
 
+#include <string.h>
+#include <errno.h>
+ 
 #include "data.h"
 
 /**

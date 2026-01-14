@@ -8,14 +8,14 @@ HEADER = serial.h data.h rest.h Makefile
 OBJ = serial.o data.o rest.o
 TESTOBJ = data_test.o rest_test.o
 
-CC  = gcc
+CC = gcc
 OBJDUMP = objdump
 SIZE = size
 ACEUNIT = aceunit
 
-CFLAGS = -std=gnu23 -g -ggdb -Wall -O2 -I. \
-	-I/usr/include/x86_64-linux-gnu \
-	-I/usr/local/include
+CFLAGS =  -std=gnu23 -g -ggdb -Wall -O2 -I.
+CFLAGS += -I/usr/include/x86_64-linux-gnu
+CFLAGS += -I/usr/local/include
 LIBS = -lcurl -ljson-c
 ACEUNIT_LIB = /usr/local/lib/libaceunit-fork.a
 
@@ -44,8 +44,10 @@ disasm: $(TARGET).lst
 %.lst: %
 	$(OBJDUMP) -S $< > $@
 
+.PHONY: size
 size:  $(TARGET)
 	$(SIZE) $(TARGET)
 
+.PHONY: clean
 clean:
 	rm -f $(TESTCASES) *.o $(TARGET) $(TARGET).lst $(TEST_TARGET)

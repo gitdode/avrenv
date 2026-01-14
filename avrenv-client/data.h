@@ -9,10 +9,7 @@
 #define DATA_H
 
 #include <stddef.h>
-#include <stdlib.h>
 #include <stdint.h>
-#include <string.h>
-#include <errno.h>
 #include <error.h>
 
 #include <json-c/json.h>

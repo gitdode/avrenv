@@ -11,7 +11,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <errno.h>
 #include <error.h>
 #include <fcntl.h>
 #include <termios.h>
