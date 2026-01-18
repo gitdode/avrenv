@@ -61,29 +61,26 @@ int main(int argc, char **argv) {
     char *username = argv[4];
     char *password = argv[5];
 
-    int cinit = curl_init();
-    if (cinit) {
-        return EXIT_FAILURE;
-    }
-
     int fd = serial_open(devfile);
     if (fd == -1) {
-        curl_cleanup();
-
         return EXIT_FAILURE;
     }
 
     log = fopen(logfile, "a");
     if (log == NULL) {
-        curl_cleanup();
         error(EXIT_FAILURE, errno,
                 "Log file '%s' could not be opened for writing",
                 logfile);
     }
 
+    int cinit = curl_init();
+    if (cinit) {
+        return EXIT_FAILURE;
+    }
+
     EnvData env = {0};
     char data[LINE_LEN] = {0};
-    int len, ret, tcode = 0;
+    int len = 0, ret = 0, tcode = 0;
     while ((len = serial_read(fd, data, sizeof (data))) > 0) {
         if (sigint) break;
 
