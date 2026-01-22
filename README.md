@@ -6,8 +6,8 @@
 
 Experimental project to log measurements of different environmental sensors 
 such as temperature, humidity, barometric pressure and gas sensor resistance 
-plus GPS position to an SD card and transmit them via radio to a receiver, 
-displaying and publishing the measurements to a web site.  
+plus GPS position to an SD card and transmit them via radio to a receiver 
+publishing the measurements to a web page.  
 
 The idea is to send the sensors up to the sky with a weather baloon and collect 
 some hopefully useful and interesting measurements, and of course to recover the 
@@ -53,6 +53,4 @@ and `Leaflet` to show the current position on an OpenStreetMap map.
 Also a small experimental project should have tests, right? The client program is using 
 `AceUnit` for unit tests, while those making HTTP requests are actually integration tests, 
 simply using the Quarkus web app running in dev mode with Dev Services for Keycloak, which is 
-very convenient for development but currently not included in the GitHub action building 
-and testing the projects.  
-The Quarkus web app is simply tested by building the project.
+also very convenient for development. The Quarkus web app is simply tested by building the project.
